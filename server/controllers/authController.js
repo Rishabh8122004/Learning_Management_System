@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const safeUser = require('../utils/safeUser');
 const { sendMail } = require('../utils/mailer');
+const { removeUserAndData } = require('../utils/removeUser');
 
 const SALT_ROUNDS = 10;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,6 +41,45 @@ const sendVerificationEmail = (user, token) => {
 const newEmailToken = () => {
   const token = crypto.randomBytes(32).toString('hex');
   return { token, hash: hashToken(token) };
+};
+
+// Decides whether an email can be used for a new or changed account. Someone may have typed an address that is
+// not theirs and never confirmed it. After a day the real owner may use it; the unconfirmed account (which never
+// had a login) is replaced. Returns null when the address is free, otherwise { status, message }.
+const claimEmail = async (normalizedEmail) => {
+  const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt');
+  if (!existing) return null;
+
+  const unconfirmed = existing.emailVerified === false;
+  const stale = unconfirmed && Date.now() - new Date(existing.createdAt).getTime() > VERIFY_HOURS * 3600 * 1000;
+
+  if (!stale) {
+    return {
+      status: 409,
+      message: unconfirmed
+        ? 'This email is waiting to be confirmed. Check your inbox, or ask for a new link on the login page.'
+        : 'Email is already registered',
+    };
+  }
+
+  await User.deleteOne({ _id: existing._id, emailVerified: false });
+  return null;
+};
+
+// Proves that a person who cannot log in yet (email not confirmed) owns the account, by its password.
+// Used by the "wrong email" options on the login page. Returns { user } or { status, message }.
+const unconfirmedAccount = async (email, password) => {
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+    return { status: 400, message: 'Email and password are required' };
+  }
+
+  const user = await User.findOne({ email: email.trim().toLowerCase() });
+  const passwordMatches = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
+
+  if (!user || !passwordMatches) return { status: 401, message: 'Invalid email or password' };
+  if (user.emailVerified !== false) return { status: 400, message: 'This account is already confirmed. Log in instead.' };
+
+  return { user };
 };
 
 // The address of the website, used to build the link in the email (first CLIENT_ORIGIN unless APP_URL is set).
@@ -81,24 +121,8 @@ const register = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt');
-    if (existing) {
-      // Someone may have typed an address that is not theirs and never confirmed it. After a day, the real
-      // owner may register with it; the unconfirmed account (which never had a login) is replaced.
-      const unconfirmed = existing.emailVerified === false;
-      const stale = unconfirmed && Date.now() - new Date(existing.createdAt).getTime() > VERIFY_HOURS * 3600 * 1000;
-
-      if (!stale) {
-        return fail(
-          res,
-          409,
-          unconfirmed
-            ? 'This email is waiting to be confirmed. Check your inbox, or ask for a new link on the login page.'
-            : 'Email is already registered'
-        );
-      }
-      await User.deleteOne({ _id: existing._id, emailVerified: false });
-    }
+    const blocked = await claimEmail(normalizedEmail);
+    if (blocked) return fail(res, blocked.status, blocked.message);
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const { token, hash } = newEmailToken();
@@ -312,6 +336,71 @@ const resendVerification = async (req, res) => {
   }
 };
 
+// POST /api/auth/unconfirmed/change-email  { email, password, newEmail }
+// For someone who typed the wrong (or a fake) address when registering: with the password, move the account to
+// the right address and send the confirmation link there.
+const changeUnconfirmedEmail = async (req, res) => {
+  try {
+    const { email, password, newEmail } = req.body || {};
+
+    const found = await unconfirmedAccount(email, password);
+    if (!found.user) return fail(res, found.status, found.message);
+
+    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+      return fail(res, 400, 'A valid new email is required');
+    }
+    const normalized = newEmail.trim().toLowerCase();
+    if (normalized === found.user.email) return fail(res, 400, 'That is the email already on this account');
+
+    const blocked = await claimEmail(normalized);
+    if (blocked) return fail(res, blocked.status, blocked.message);
+
+    const { token, hash } = newEmailToken();
+    await User.updateOne(
+      { _id: found.user._id },
+      {
+        $set: {
+          email: normalized,
+          verifyEmailHash: hash,
+          verifyEmailExpires: new Date(Date.now() + VERIFY_HOURS * 3600 * 1000),
+        },
+      }
+    );
+
+    const emailSent = await sendVerificationEmail({ name: found.user.name, email: normalized }, token);
+    return res.status(200).json({
+      success: true,
+      emailSent,
+      email: normalized,
+      message: emailSent
+        ? 'Email changed. Check the new inbox for the confirmation link.'
+        : 'Email changed, but the confirmation email could not be sent. Try "Resend confirmation email" in a few minutes.',
+    });
+  } catch (err) {
+    if (err && err.code === 11000) return fail(res, 409, 'Email is already registered'); // race condition
+    console.error('Change unconfirmed email error:', err.message);
+    return fail(res, 500, 'Server error');
+  }
+};
+
+// POST /api/auth/unconfirmed/delete  { email, password }
+// Lets someone who registered with a fake address remove the account themselves. Only accounts that were never
+// confirmed can be removed this way (they have no data); confirmed users delete from their profile.
+const deleteUnconfirmedAccount = async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+
+    const found = await unconfirmedAccount(email, password);
+    if (!found.user) return fail(res, found.status, found.message);
+
+    await removeUserAndData(found.user._id);
+    return res.status(200).json({ success: true, message: 'Account deleted. You can register again with a real email.' });
+  } catch (err) {
+    console.error('Delete unconfirmed account error:', err.message);
+    return fail(res, 500, 'Server error');
+  }
+};
+
 // GET /api/auth/me  (protected by authMiddleware)
 const getMe = async (req, res) => {
   try {
@@ -326,4 +415,15 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, signToken, forgotPassword, resetPassword, verifyEmail, resendVerification };
+module.exports = {
+  register,
+  login,
+  getMe,
+  signToken,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
+  changeUnconfirmedEmail,
+  deleteUnconfirmedAccount,
+};

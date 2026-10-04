@@ -279,3 +279,46 @@
 .auth-notice p:last-child {
   margin-bottom: 0;
 }
+
+.auth-notice-hint {
+  color: var(--text-secondary);
+}
+
+.auth-notice-actions,
+.auth-notice-form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.auth-notice-form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.auth-notice-form input {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.auth-notice-go {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #1c1208;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-notice-go:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
