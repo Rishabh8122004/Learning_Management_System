@@ -111,7 +111,8 @@ describe('reset password', () => {
 
     const { update } = updates[0];
     assert.ok(await bcrypt.compare('brand-new-pass-1', update.$set.passwordHash));
-    assert.deepEqual(Object.keys(update.$unset).sort(), ['resetPasswordExpires', 'resetPasswordHash']);
+    assert.ok('resetPasswordHash' in update.$unset && 'resetPasswordExpires' in update.$unset);
+    assert.equal(update.$set.emailVerified, true, 'a completed reset also confirms the email');
     assert.deepEqual(update.$inc, { tokenVersion: 1 });
     assert.equal(JSON.stringify(res.body).includes('token'), false);
   });

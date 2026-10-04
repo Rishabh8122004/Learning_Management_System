@@ -39,6 +39,7 @@ export async function apiRequest(endpoint, options = {}) {
   if (!response.ok) {
     throw Object.assign(new Error(data?.message || "Something went wrong."), {
       status: response.status,
+      code: data?.code,
     });
   }
 

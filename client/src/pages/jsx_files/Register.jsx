@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import FieldError from "../../components/FieldError";
 import PasswordField from "../../components/auth/PasswordField";
@@ -24,7 +24,6 @@ const CHECKS = {
 };
 
 function Register() {
-  const navigate = useNavigate();
   const { register } = useAuth();
   const toast = useToast();
   const nameRef = useAutoFocus();
@@ -38,6 +37,7 @@ function Register() {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
 
   // The same rules the server enforces, shown as a calm checklist while typing.
   const longEnough = formData.password.length >= 8;
@@ -78,18 +78,47 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      await register(
+      const data = await register(
         formData.name.trim(),
         formData.email.trim(),
         formData.password
       );
 
-      navigate("/dashboard", { replace: true });
+      setResult({ email: formData.email.trim(), emailSent: data.emailSent !== false });
     } catch (registerError) {
       toast.error(registerError.message);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (result) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card">
+          <header className="auth-header" role="status">
+            <p className="auth-eyebrow">ALMOST THERE</p>
+            <h1>Check your email</h1>
+            {result.emailSent ? (
+              <p>
+                We sent a confirmation link to <strong>{result.email}</strong>. Click it to activate your account, then
+                log in. The link works for 24 hours. Check your spam folder if you cannot find it.
+              </p>
+            ) : (
+              <p>
+                Your account was created, but we could not send the confirmation email to{" "}
+                <strong>{result.email}</strong> right now. Try &ldquo;Resend confirmation email&rdquo; on the log in page
+                in a few minutes.
+              </p>
+            )}
+          </header>
+
+          <p className="auth-footer">
+            <Link to="/login">Go to log in</Link>
+          </p>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -99,7 +128,8 @@ function Register() {
           <p className="auth-eyebrow">GET STARTED</p>
           <h1>Create your Trackly account</h1>
           <p>
-            Start organizing your learning and keeping track of your progress.
+            Start organizing your learning and keeping track of your progress. Use a real email: you will confirm it,
+            and it is how you reset a forgotten password.
           </p>
         </header>
 
