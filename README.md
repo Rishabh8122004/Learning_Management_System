@@ -1,5 +1,7 @@
 # Trackly
 
+**Live app: https://trackly-rust.vercel.app**
+
 **Trackly is a personal learning organizer and progress tracker.** People learn from anywhere (YouTube, documentation, books, college).
 Trackly does not host that content. It helps you organize it into courses, mark lessons done, set goals, log progress and see everything on a dashboard.
 
@@ -137,9 +139,9 @@ Responses are JSON: `{ success: true, ... }` on success and `{ success: false, m
 
 | | URL |
 |---|---|
-| Live app (frontend) | _to be added_ |
-| API (backend) | _to be added_ |
-| API health check | _to be added_ (`<backend-url>/api/health`) |
+| Live app (frontend) | https://trackly-rust.vercel.app |
+| API (backend) | https://trackly-api-v840.onrender.com |
+| API health check | https://trackly-api-v840.onrender.com/api/health |
 
 ### How it is deployed
 
