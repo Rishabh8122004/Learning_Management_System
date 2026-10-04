@@ -56,7 +56,7 @@ Trackly is **not** a marketplace, video platform, social network or payment plat
 │   ├── models/             User, Course, Enrollment, Goal, GoalEntry
 │   ├── routes/             /api/auth, users, courses, enrollments, goals, notifications, admin
 │   ├── utils/              progress and safe-user helpers
-│   ├── scripts/            setRole.js (make an admin), dbStats.js (storage check), dataCheck.js (read-only data check)
+│   ├── scripts/            setRole.js (make an admin), seedShowcaseCourses.js (starter courses), dbStats.js (storage check), dataCheck.js (read-only data check)
 │   └── tests/
 └── README.md
 ```
@@ -99,6 +99,16 @@ Register normally in the app, then run this once on the machine that has the ser
 ```bash
 cd server
 node scripts/setRole.js <email> admin
+```
+
+### Add starter courses (optional)
+
+Five real courses (JavaScript, React, Node/Express, MongoDB/Mongoose, Git/GitHub) made of free videos and official documentation are included. As an admin, preview and then add them:
+
+```bash
+cd server
+node scripts/seedShowcaseCourses.js <admin-email>           # dry run, writes nothing
+node scripts/seedShowcaseCourses.js <admin-email> --apply   # adds them (existing titles are skipped)
 ```
 
 ### Tests, lint and build
