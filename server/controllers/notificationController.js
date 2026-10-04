@@ -5,6 +5,7 @@ const { motivationFor } = require('../utils/motivation');
 
 const DAY = 24 * 60 * 60 * 1000;
 const NEW_COURSE_DAYS = 14;
+const NEW_USER_DAYS = 14;
 const DEADLINE_DAYS = 3;
 
 const fail = (res, status, message) => res.status(status).json({ success: false, message });
@@ -21,10 +22,11 @@ const deadlineText = (targetDate, now) => {
 // GET /api/notifications
 // Nothing is stored per notification: the list is worked out from courses and goals
 // each time. The only thing saved is when the user last opened the bell.
+// Admins also see people who registered recently (computed from User.createdAt, nothing extra is stored).
 const getNotifications = async (req, res) => {
   try {
     const now = new Date();
-    const user = await User.findById(req.user.id).select('notificationsSeenAt createdAt').lean();
+    const user = await User.findById(req.user.id).select('notificationsSeenAt createdAt role').lean();
     if (!user) return fail(res, 401, 'Invalid or expired token');
 
     const seenAt = user.notificationsSeenAt || user.createdAt;
@@ -32,7 +34,10 @@ const getNotifications = async (req, res) => {
     const since = new Date(now.getTime() - NEW_COURSE_DAYS * DAY);
     const deadlineLimit = new Date(now.getTime() + DEADLINE_DAYS * DAY);
 
-    const [courses, goals] = await Promise.all([
+    const isAdmin = user.role === 'admin';
+    const newUserSince = new Date(now.getTime() - NEW_USER_DAYS * DAY);
+
+    const [courses, goals, newUsers] = await Promise.all([
       // Courses published before publishedAt existed fall back to createdAt.
       Course.find({
         published: true,
@@ -54,6 +59,13 @@ const getNotifications = async (req, res) => {
         .sort({ targetDate: 1 })
         .limit(10)
         .lean(),
+      isAdmin
+        ? User.find({ _id: { $ne: req.user.id }, createdAt: { $gte: newUserSince } })
+            .select('name createdAt')
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .lean()
+        : [],
     ]);
 
     // Deadlines count as unread until the bell has been opened today.
@@ -84,6 +96,15 @@ const getNotifications = async (req, res) => {
         unread: at > seenAt,
       }));
 
+    const userItems = newUsers.map((person) => ({
+      type: 'user',
+      title: 'New user',
+      message: `${person.name} registered`,
+      link: '/admin/users',
+      createdAt: person.createdAt,
+      unread: person.createdAt > seenAt,
+    }));
+
     const motivation = {
       type: 'motivation',
       title: 'Today’s thought',
@@ -93,7 +114,7 @@ const getNotifications = async (req, res) => {
       unread: false,
     };
 
-    const notifications = [...deadlineItems, ...courseItems, motivation];
+    const notifications = [...deadlineItems, ...userItems, ...courseItems, motivation];
 
     return res.status(200).json({
       success: true,

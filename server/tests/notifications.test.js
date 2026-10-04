@@ -6,9 +6,28 @@ let seenAt = null;
 let saved = null;
 let goalFilter = null;
 let courseFilter = null;
+let role = 'user';
+let userFilter = null;
+let userFindCalled = false;
 
 stub('models/User', {
-  findById: () => ({ select: () => ({ lean: async () => ({ notificationsSeenAt: seenAt, createdAt: daysFromNow(-60) }) }) }),
+  findById: () => ({ select: () => ({ lean: async () => ({ notificationsSeenAt: seenAt, createdAt: daysFromNow(-60), role }) }) }),
+  find: (filter) => {
+    userFindCalled = true;
+    userFilter = filter;
+    return {
+      select: () => ({
+        sort: () => ({
+          limit: () => ({
+            lean: async () => [
+              { _id: 'n1', name: 'Asha', createdAt: daysFromNow(-1) },
+              { _id: 'n2', name: 'Ravi', createdAt: daysFromNow(-5) },
+            ],
+          }),
+        }),
+      }),
+    };
+  },
   updateOne: async (filter, update) => {
     saved = update;
   },
@@ -102,6 +121,33 @@ describe('notification list', () => {
     await markSeen({ user: { id: 'u1' } }, res);
     assert.equal(res.statusCode, 200);
     assert.ok(saved.$set.notificationsSeenAt instanceof Date);
+  });
+});
+
+describe('admin: new users', () => {
+  test('a normal user never sees other people or triggers the lookup', async () => {
+    role = 'user';
+    userFindCalled = false;
+    const { body } = await get();
+    assert.equal(userFindCalled, false);
+    assert.equal(body.notifications.filter((item) => item.type === 'user').length, 0);
+  });
+
+  test('an admin sees who registered recently (names only), excluding themselves', async () => {
+    role = 'admin';
+    seenAt = daysFromNow(-3);
+    const { body } = await get();
+    const items = body.notifications.filter((item) => item.type === 'user');
+
+    assert.equal(items.length, 2);
+    assert.equal(items[0].message, 'Asha registered');
+    assert.equal(items[0].link, '/admin/users');
+    assert.equal(items[0].unread, true);
+    assert.equal(items[1].unread, false);
+    assert.deepEqual(userFilter._id, { $ne: 'u1' });
+    assert.ok(userFilter.createdAt.$gte instanceof Date);
+    assert.equal(JSON.stringify(body).includes('email'), false);
+    role = 'user';
   });
 });
 

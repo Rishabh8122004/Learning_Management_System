@@ -20,6 +20,7 @@ Trackly does not host that content. It helps you organize it into courses, mark 
 - Light and dark themes with an animated switch, responsive layout and accessible controls.
 
 **For admins** (role enforced on the server)
+- The notification bell also shows **new users** who registered in the last 14 days (names only, worked out from the account creation date; nothing extra is stored).
 - Overview numbers, a read-only **Users** list (search by name or email), course list with search and status filter.
 - Create, edit, publish or unpublish, archive, restore and permanently delete courses (modules and lessons editor with reordering).
 

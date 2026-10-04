@@ -189,7 +189,7 @@ function NotificationBell() {
                         <span className="bell-item-text">
                           <strong>{item.title}</strong>
                           <span>{item.message}</span>
-                          {item.type === "course" && (
+                          {(item.type === "course" || item.type === "user") && (
                             <small>{timeAgo(item.createdAt)}</small>
                           )}
                         </span>
