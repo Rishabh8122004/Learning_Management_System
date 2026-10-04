@@ -10,6 +10,21 @@ function AuthProvider({ children }) {
     () => localStorage.getItem("trackly-token") || null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
+
+  // apiRequest announces a rejected login token (expired, or signed out elsewhere). Without this the page would
+  // keep showing a signed-in person whose every request fails; now they are sent back to the login page.
+  useEffect(() => {
+    function handleExpired() {
+      setToken(null);
+      setUser(null);
+      setSessionExpired(true);
+    }
+
+    window.addEventListener("trackly-auth-expired", handleExpired);
+
+    return () => window.removeEventListener("trackly-auth-expired", handleExpired);
+  }, []);
 
   useEffect(() => {
     async function restoreSession() {
@@ -48,6 +63,7 @@ function AuthProvider({ children }) {
     });
 
     localStorage.setItem("trackly-token", data.token);
+    setSessionExpired(false);
     setToken(data.token);
     setUser(data.user);
 
@@ -90,6 +106,7 @@ function AuthProvider({ children }) {
     user,
     token,
     isLoading,
+    sessionExpired,
     login,
     register,
     logout,

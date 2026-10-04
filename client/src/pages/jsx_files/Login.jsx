@@ -168,6 +168,12 @@ function Login() {
           <p>Continue organizing your learning and tracking your progress.</p>
         </header>
 
+        {location.state?.expired && (
+          <p className="auth-notice" role="status">
+            Your session ended. Please log in again.
+          </p>
+        )}
+
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="auth-field">
             <label htmlFor="email">Email</label>

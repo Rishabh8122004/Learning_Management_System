@@ -4,7 +4,7 @@ import { useAuth } from "../../context/useAuth";
 import PageLoading from "./PageLoading";
 
 function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, sessionExpired } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -12,7 +12,7 @@ function ProtectedRoute() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" replace state={{ from: location.pathname, expired: sessionExpired }} />;
   }
 
   return <Outlet />;
