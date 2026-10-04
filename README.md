@@ -103,7 +103,7 @@ node scripts/setRole.js <email> admin
 
 ### Add starter courses (optional)
 
-Five real courses (JavaScript, React, Node/Express, MongoDB/Mongoose, Git/GitHub) made of free videos and official documentation are included. As an admin, preview and then add them:
+Twelve real courses (HTML/CSS, JavaScript, TypeScript, React, Node/Express, Python, SQL, MongoDB/Mongoose, Git/GitHub, computer science basics, security and accessibility) made of free videos and official documentation are included. As an admin, preview and then add them:
 
 ```bash
 cd server

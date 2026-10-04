@@ -1,4 +1,4 @@
-// Real starter courses for the Trackly catalog. Every lesson is a link to free, public learning material
+// Real starter courses for the Trackly catalog (twelve in total). Every lesson is a link to free, public learning material
 // (official documentation or a freeCodeCamp / well-known YouTube course). Durations are in minutes;
 // for videos they are the real video length rounded to the minute, for docs pages an honest estimate.
 // Used by seedShowcaseCourses.js. Nothing here is stored until an admin runs that script with --apply.
@@ -157,6 +157,185 @@ const courses = [
           lesson('What is Git? (Pro Git book)', 'https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F', 20),
           lesson('Branches in a nutshell (Pro Git book)', 'https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell', 20),
           lesson('About pull requests (GitHub Docs)', 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests', 20),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'HTML and CSS Foundations',
+    description:
+      'Learn how every web page is built: structure with HTML, style with CSS, and layouts that work on any screen using Flexbox, Grid and media queries. Two freeCodeCamp video courses plus the MDN reference pages you will keep opening.',
+    category: 'Web Development',
+    level: 'beginner',
+    tags: ['html', 'css', 'flexbox', 'responsive'],
+    modules: [
+      {
+        title: 'HTML',
+        description: 'The structure of a page.',
+        lessons: [
+          lesson('HTML Full Course - Build a Website Tutorial (freeCodeCamp)', 'https://www.youtube.com/watch?v=pQN-pnXPaVg', 123),
+          lesson('Structuring content with HTML (MDN)', `${MDN}Learn_web_development/Core/Structuring_content`, 40),
+        ],
+      },
+      {
+        title: 'CSS and layout',
+        description: 'Style, then arrange things so they work on phones and desktops.',
+        lessons: [
+          lesson('CSS Full Course - Includes Flexbox and CSS Grid (freeCodeCamp)', 'https://www.youtube.com/watch?v=ieTHC78giGQ', 86),
+          lesson('CSS styling basics (MDN)', `${MDN}Learn_web_development/Core/Styling_basics`, 40),
+          lesson('Basic concepts of flexbox (MDN)', `${MDN}Web/CSS/CSS_flexible_box_layout/Basic_concepts_of_flexbox`, 25),
+          lesson('Basic concepts of grid layout (MDN)', `${MDN}Web/CSS/CSS_grid_layout/Basic_concepts_of_grid_layout`, 25),
+          lesson('Using media queries (MDN)', `${MDN}Web/CSS/CSS_media_queries/Using_media_queries`, 20, 'This is how a layout adapts to small screens.'),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Python for Beginners',
+    description:
+      'Start programming with Python, one of the most widely used languages for scripting, data and automation. A complete freeCodeCamp video course alongside the official Python tutorial.',
+    category: 'Programming',
+    level: 'beginner',
+    tags: ['python', 'beginner', 'scripting'],
+    modules: [
+      {
+        title: 'Learn the basics',
+        description: 'Watch the full course, then read the official tutorial for the same ideas.',
+        lessons: [
+          lesson('Learn Python - Full Course for Beginners (freeCodeCamp)', 'https://www.youtube.com/watch?v=rfscVS0vtbw', 267),
+          lesson('An informal introduction to Python (python.org)', 'https://docs.python.org/3/tutorial/introduction.html', 25),
+          lesson('More control flow tools (python.org)', 'https://docs.python.org/3/tutorial/controlflow.html', 30),
+          lesson('The Python Tutorial (full index)', 'https://docs.python.org/3/tutorial/index.html', 20, 'Keep this as your reference for later chapters.'),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'SQL and Relational Databases',
+    description:
+      'Understand tables, rows and relationships, and learn to ask questions with SQL queries. A full database course on video plus SQLBolt, a free set of interactive lessons you practise in the browser.',
+    category: 'Databases',
+    level: 'beginner',
+    tags: ['sql', 'database', 'queries', 'joins'],
+    modules: [
+      {
+        title: 'Database fundamentals',
+        description: 'A complete beginner course.',
+        lessons: [
+          lesson('SQL Tutorial - Full Database Course for Beginners (freeCodeCamp)', 'https://www.youtube.com/watch?v=HXV3zeQKqGY', 261),
+        ],
+      },
+      {
+        title: 'Practise in the browser',
+        description: 'Short interactive exercises on SQLBolt.',
+        lessons: [
+          lesson('SQLBolt: SELECT queries 101', 'https://sqlbolt.com/lesson/select_queries_introduction', 20),
+          lesson('SQLBolt: Multi-table queries with JOINs', 'https://sqlbolt.com/lesson/select_queries_with_joins', 25),
+          lesson('SQLBolt: all lessons', 'https://sqlbolt.com/', 90, 'Work through the rest at your own pace.'),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'TypeScript Essentials',
+    description:
+      'Add types to JavaScript so many mistakes are caught before your code even runs. Used by most modern React and Node projects. A freeCodeCamp video tutorial plus the official TypeScript handbook.',
+    category: 'Programming',
+    level: 'intermediate',
+    tags: ['typescript', 'javascript', 'types'],
+    modules: [
+      {
+        title: 'Get started',
+        description: 'See why types help and how to write them.',
+        lessons: [
+          lesson('Learn TypeScript - Full Tutorial (freeCodeCamp)', 'https://www.youtube.com/watch?v=30LWjhZzg50', 286),
+          lesson('The TypeScript Handbook: introduction', 'https://www.typescriptlang.org/docs/handbook/intro.html', 15),
+          lesson('Everyday Types (TypeScript Handbook)', 'https://www.typescriptlang.org/docs/handbook/2/everyday-types.html', 30),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'React in Practice',
+    description:
+      'Go beyond the basics: build a small game, share state between components, write your own hooks and move between pages with React Router. Best taken after React Fundamentals.',
+    category: 'Web Development',
+    level: 'intermediate',
+    tags: ['react', 'hooks', 'state', 'react-router'],
+    modules: [
+      {
+        title: 'Build something',
+        description: 'Learn by making a working app.',
+        lessons: [
+          lesson('Tutorial: Tic-Tac-Toe (react.dev)', 'https://react.dev/learn/tutorial-tic-tac-toe', 60, 'A hands-on tutorial that you code along with.'),
+        ],
+      },
+      {
+        title: 'State and hooks',
+        description: 'The patterns used in real applications.',
+        lessons: [
+          lesson('Managing State (react.dev)', 'https://react.dev/learn/managing-state', 30),
+          lesson('Sharing state between components', 'https://react.dev/learn/sharing-state-between-components', 20),
+          lesson('Reusing logic with custom Hooks', 'https://react.dev/learn/reusing-logic-with-custom-hooks', 25),
+        ],
+      },
+      {
+        title: 'Multiple pages',
+        description: 'Routing is what turns one screen into a whole app.',
+        lessons: [
+          lesson('React Router documentation', 'https://reactrouter.com/home', 30),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Computer Science Foundations',
+    description:
+      'The ideas behind all programming: how computers think, algorithms and data structures. Harvard CS50 is one of the most popular free introductions in the world; it is paired with two freeCodeCamp courses.',
+    category: 'Computer Science',
+    level: 'beginner',
+    tags: ['cs50', 'algorithms', 'data-structures', 'fundamentals'],
+    modules: [
+      {
+        title: 'Start with CS50',
+        description: 'Harvard introduction to computer science.',
+        lessons: [
+          lesson('CS50 - Lecture 0: Scratch (Harvard)', 'https://www.youtube.com/watch?v=6px2ii_x52A', 140, 'The first lecture; the full course is linked below.'),
+          lesson('CS50x - full course site', 'https://cs50.harvard.edu/x/', 30, 'Lectures, notes and problem sets, free.'),
+        ],
+      },
+      {
+        title: 'Programming and algorithms',
+        description: 'Think like a programmer.',
+        lessons: [
+          lesson('Introduction to Programming and Computer Science (freeCodeCamp)', 'https://www.youtube.com/watch?v=zOjov-2OZ0E', 119),
+          lesson('Algorithms and Data Structures Tutorial (freeCodeCamp)', 'https://www.youtube.com/watch?v=8hly31xKli0', 322),
+        ],
+      },
+    ],
+  },
+  {
+    title: 'Web Security and Accessibility Basics',
+    description:
+      'Two skills that separate hobby projects from professional ones: keeping an app safe from the most common attacks, and making it usable by everyone, including people who use screen readers or only a keyboard.',
+    category: 'Web Development',
+    level: 'intermediate',
+    tags: ['security', 'owasp', 'accessibility', 'a11y'],
+    modules: [
+      {
+        title: 'Security',
+        description: 'The most common web risks, explained.',
+        lessons: [
+          lesson('OWASP Top Ten', 'https://owasp.org/www-project-top-ten/', 30, 'The industry list of the biggest web application risks.'),
+          lesson('Cross-Origin Resource Sharing (CORS) (MDN)', `${MDN}Web/HTTP/CORS`, 20),
+        ],
+      },
+      {
+        title: 'Accessibility',
+        description: 'Build for everyone.',
+        lessons: [
+          lesson('Learn Accessibility (web.dev)', 'https://web.dev/learn/accessibility', 60),
+          lesson('Accessibility (MDN)', `${MDN}Learn_web_development/Core/Accessibility`, 30),
         ],
       },
     ],
