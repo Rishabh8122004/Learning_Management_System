@@ -7,7 +7,9 @@ export function buildRecentActivity(enrollments, goals, limit = 6) {
 
   for (const enrollment of enrollments) {
     const title = enrollment.course?.title;
-    const link = enrollment.course?._id ? `/courses/${enrollment.course._id}` : "/my-courses";
+    // A course that was archived or unpublished can no longer be opened, so its events point to My Courses instead.
+    const link =
+      enrollment.course?._id && enrollment.courseAvailable !== false ? `/courses/${enrollment.course._id}` : "/my-courses";
 
     if (!title) continue;
 

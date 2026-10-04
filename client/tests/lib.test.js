@@ -402,6 +402,22 @@ describe("form validators", () => {
 
 import { titleFor } from "../src/lib/pageTitle.js";
 
+describe("recent activity links", () => {
+  test("an enrollment in a course that is gone points to My Courses, not to a missing page", () => {
+    const base = { enrolledAt: "2026-10-01T10:00:00.000Z", course: { _id: "c1", title: "React" } };
+    const events = buildRecentActivity(
+      [
+        { ...base, _id: "e1", courseAvailable: true },
+        { ...base, _id: "e2", courseAvailable: false },
+      ],
+      [],
+    );
+
+    assert.equal(events.find((event) => event.id === "enroll-e1").link, "/courses/c1");
+    assert.equal(events.find((event) => event.id === "enroll-e2").link, "/my-courses");
+  });
+});
+
 describe("page titles", () => {
   test("every page has a clear title and unknown addresses say so", () => {
     assert.equal(titleFor("/goals"), "Track Your Goals · Trackly");
