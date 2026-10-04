@@ -26,7 +26,7 @@ const getStats = async (req, res) => {
       Course.countDocuments({ published: true, deletedAt: null }),
       Course.countDocuments({ published: false, deletedAt: null }),
       Course.countDocuments({ deletedAt: { $ne: null } }),
-      User.countDocuments({}),
+      User.countDocuments({ emailVerified: { $ne: false } }), // people, not sign-ups that never confirmed their email
       Enrollment.countDocuments({}),
     ]);
 
