@@ -6,6 +6,7 @@ import PasswordField from "../../components/auth/PasswordField";
 import { useAuth } from "../../context/useAuth";
 import { useToast } from "../../context/useToast";
 import { useAutoFocus } from "../../hooks/useAutoFocus";
+import { apiRequest } from "../../services/apiRequest";
 import { firstErrorKey, hasErrors, validateEmail, validateRequired } from "../../lib/validators";
 import "../css_files/Login.css";
 
@@ -37,6 +38,8 @@ function Login() {
   const [errors, setErrors] = useState({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resendState, setResendState] = useState("idle");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -74,9 +77,30 @@ function Login() {
       await login(formData.email.trim(), formData.password);
       navigate(destinationAfterLogin(location), { replace: true });
     } catch (loginError) {
-      toast.error(loginError.message);
+      if (loginError.code === "EMAIL_NOT_VERIFIED") {
+        setNeedsConfirmation(true);
+        setResendState("idle");
+      } else {
+        setNeedsConfirmation(false);
+        toast.error(loginError.message);
+      }
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    setResendState("sending");
+
+    try {
+      await apiRequest("/auth/resend-verification", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email.trim() }),
+      });
+      setResendState("sent");
+    } catch (resendError) {
+      setResendState("idle");
+      toast.error(resendError.message || "Could not send the email. Please try again.");
     }
   }
 
@@ -121,6 +145,26 @@ function Login() {
             error={errors.password}
             disabled={isSubmitting}
           />
+
+          {needsConfirmation && (
+            <div className="auth-notice" role="alert">
+              <p>
+                <strong>Confirm your email first.</strong> We sent a link when you registered.
+              </p>
+              {resendState === "sent" ? (
+                <p>A new link is on its way. Check your inbox (and spam).</p>
+              ) : (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={resendConfirmation}
+                  disabled={resendState === "sending"}
+                >
+                  {resendState === "sending" ? "Sending..." : "Resend confirmation email"}
+                </button>
+              )}
+            </div>
+          )}
 
           <p className="auth-forgot">
             <Link to="/forgot-password">Forgot your password?</Link>

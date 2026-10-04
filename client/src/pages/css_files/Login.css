@@ -263,3 +263,19 @@
   text-align: right;
   font-size: var(--text-sm);
 }
+
+.auth-notice {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  font-size: var(--text-sm);
+}
+
+.auth-notice p {
+  margin: 0 0 var(--space-2);
+}
+
+.auth-notice p:last-child {
+  margin-bottom: 0;
+}

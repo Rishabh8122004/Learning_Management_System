@@ -65,11 +65,8 @@ function AuthProvider({ children }) {
       skipAuthExpired: true,
     });
 
-    localStorage.setItem("trackly-token", data.token);
-    setToken(data.token);
-    setUser(data.user);
-
-    return data.user;
+    // No token yet: the server asks the person to confirm their email first.
+    return data;
   }
 
   // Used by the profile page: a new name, or a fresh token after a password change.

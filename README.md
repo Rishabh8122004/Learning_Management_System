@@ -8,7 +8,7 @@ Trackly does not host that content. It helps you organize it into courses, mark 
 ## Features
 
 **For every user**
-- Register, log in and log out (JWT). **Forgot password:** a single-use reset link, valid for 60 minutes, is sent by email. Passwords are hashed with bcrypt and never stored in plain text.
+- Register with **email confirmation** (a link is emailed; the account works after it is opened), log in and log out (JWT). **Forgot password:** a single-use reset link, valid for 60 minutes, is sent by email. Passwords are hashed with bcrypt and never stored in plain text.
 - **Courses:** browse, search, filter by category and level, and open a course made of modules and lessons (each lesson is a link to the learning resource).
 - **Enrollment:** enroll, mark lessons complete (with undo), see progress per course in *My Courses*.
 - **Track Your Goals:** three goal kinds, with nested sub-goals.
@@ -89,7 +89,7 @@ Real values go only in `.env` files, which are git-ignored. Never commit them.
 | `server/.env` | `MONGO_URI` | yes | MongoDB connection string |
 | `server/.env` | `JWT_SECRET` | yes | long random string used to sign login tokens |
 | `server/.env` | `PORT` | no | API port (default 5000) |
-| `server/.env` | `BREVO_API_KEY`, `MAIL_FROM` | no | for password-reset emails: a Brevo API key (a secret, set only on the host) and a sender address verified in Brevo. Without them the reset email is not sent. |
+| `server/.env` | `BREVO_API_KEY`, `MAIL_FROM` | no | for confirmation and password-reset emails (required for new sign-ups to finish): a Brevo API key (a secret, set only on the host) and a sender address verified in Brevo. Without them the reset email is not sent. |
 | `server/.env` | `APP_URL` | no | website address used in the reset link (defaults to the first `CLIENT_ORIGIN`) |
 | `server/.env` | `CLIENT_ORIGIN` | no | allowed browser origin(s), comma separated, no trailing slash (default `http://localhost:5173`); set to the live frontend URL in production |
 | `client/.env` | `VITE_API_URL` | no | API base URL including `/api` (default `http://localhost:5000/api`) |
@@ -128,7 +128,7 @@ All routes are under `/api`. Routes marked 🔒 need a login token, 🛡 need th
 | Area | Endpoints |
 |---|---|
 | Health | `GET /health` |
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/forgot-password`, `POST /auth/reset-password`, 🔒 `GET /auth/me` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/verify-email`, `POST /auth/resend-verification`, `POST /auth/forgot-password`, `POST /auth/reset-password`, 🔒 `GET /auth/me` |
 | Users | 🔒 `PATCH /users/me`, `PATCH /users/me/password`, `DELETE /users/me` |
 | Courses | `GET /courses` (search, category, level, page), `GET /courses/:id`; 🛡 `POST /courses`, `PUT /courses/:id`, `DELETE /courses/:id` (archive) |
 | Enrollments | 🔒 `GET /enrollments/me`, `POST /enrollments/:courseId`, `DELETE /enrollments/:id`, `POST /enrollments/:id/lessons/:lessonId/complete` |
@@ -145,6 +145,7 @@ Responses are JSON: `{ success: true, ... }` on success and `{ success: false, m
 - Every private resource is filtered by the signed-in user; admin power is checked on the server, not only hidden in the UI.
 - Inputs are validated and whitelisted on the server; lesson and thumbnail links must be `http(s)`.
 - `helmet`, a CORS allow-list, a request size limit and rate limits on sign-in and sensitive actions are enabled.
+- Email confirmation: new accounts cannot log in until the emailed single-use link (24 hours) is opened; accounts created before this feature count as confirmed; an unconfirmed address that nobody confirmed within a day can be registered by its real owner.
 - Password reset: only a hash of the emailed token is stored, it expires after 60 minutes and works once, the reply never reveals whether an email is registered, and every device is signed out after a reset.
 - Secrets live only in git-ignored `.env` files.
 - Dependency audit: 0 vulnerabilities across client and server (`npm audit` clean, `chokidar` overridden to `^4.0.1` in server `overrides`).
