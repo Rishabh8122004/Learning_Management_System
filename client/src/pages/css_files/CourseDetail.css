@@ -733,11 +733,6 @@
   color: var(--text-secondary);
 }
 
-.course-detail-error h1 {
-  margin-top: 0;
-  font-size: var(--text-2xl);
-}
-
 .course-skeleton-back {
   width: 120px;
   height: 16px;

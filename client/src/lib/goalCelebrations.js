@@ -7,7 +7,7 @@ import {
 } from "./goalProgress.js";
 
 // Streak lengths worth a special moment.
-export const STREAK_MILESTONES = {
+const STREAK_MILESTONES = {
   day: [3, 7, 14, 30, 50, 100, 200, 365],
   week: [2, 4, 8, 12, 26, 52],
 };

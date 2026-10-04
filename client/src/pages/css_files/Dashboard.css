@@ -329,11 +329,6 @@
   line-height: 1.6;
 }
 
-.dashboard-message {
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
 .dashboard-error {
   display: flex;
   align-items: center;
