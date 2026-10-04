@@ -131,8 +131,15 @@ const listCourses = async (req, res) => {
 
     const filter = { published: true, deletedAt: null };
 
-    const searchText = search ? search.trim() : '';
-    if (searchText) filter.$text = { $search: searchText };
+    // Every word typed must appear (as part of a word) in the title, description, category or tags, so "reac"
+    // finds React and "type script" finds TypeScript courses. Whole-word text search would find neither.
+    const terms = (search ? search.trim() : '').split(/\s+/).filter(Boolean).slice(0, 6);
+    if (terms.length) {
+      filter.$and = terms.map((term) => {
+        const pattern = new RegExp(escapeRegex(term), 'i');
+        return { $or: [{ title: pattern }, { description: pattern }, { category: pattern }, { tags: pattern }] };
+      });
+    }
 
     if (category && category.trim()) {
       filter.category = new RegExp(`^${escapeRegex(category.trim())}$`, 'i');
@@ -145,9 +152,7 @@ const listCourses = async (req, res) => {
     }
 
     // Stable sort so pagination does not skip/repeat items.
-    const sort = searchText
-      ? { score: { $meta: 'textScore' }, _id: 1 }
-      : { createdAt: -1, _id: -1 };
+    const sort = { createdAt: -1, _id: -1 };
 
     const [courses, total] = await Promise.all([
       Course.find(filter)
