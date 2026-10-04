@@ -10,7 +10,7 @@ describe('mail settings report', () => {
 
     assert.deepEqual(report.BREVO_API_KEY, { present: true, length: 16 });
     assert.deepEqual(report.MAIL_FROM, { present: false, length: 3 });
-    assert.deepEqual([...report.similarNames].sort(), ['"BREVO_API_KEY"', '"MAIL_FROM"', '"MAIL_FROM "']);
+    assert.deepEqual([...report.similarNames].sort(), ['"BREVO_API_KEY"', '"MAIL_FROM "', '"MAIL_FROM"']);
     assert.equal(JSON.stringify(report).includes('super-secret-key'), false);
     assert.equal(JSON.stringify(report).includes('typo@example.com'), false);
   });
