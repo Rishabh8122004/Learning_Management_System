@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import ConfirmInline from "../../components/ConfirmInline";
 import ErrorState from "../../components/ErrorState";
 import { apiRequest } from "../../services/apiRequest";
 import { useAuth } from "../../context/useAuth";
+import { useToast } from "../../context/useToast";
 import "../css_files/MyCourses.css";
 
 const FILTERS = [
@@ -32,11 +34,14 @@ function formatDate(value) {
 
 function MyCourses() {
   const { token } = useAuth();
+  const toast = useToast();
   const [enrollments, setEnrollments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadAttempt, setReloadAttempt] = useState(0);
   const [filter, setFilter] = useState("all");
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [removingId, setRemovingId] = useState(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -70,6 +75,23 @@ function MyCourses() {
       isCurrent = false;
     };
   }, [token, reloadAttempt]);
+
+  // A course that was archived or deleted by an admin can no longer be opened, so the learner needs a way
+  // to take it off their list (otherwise the admin could never delete the course for good).
+  async function removeEnrollment(enrollment) {
+    setRemovingId(enrollment._id);
+
+    try {
+      await apiRequest(`/enrollments/${enrollment._id}`, { method: "DELETE" });
+      setEnrollments((current) => current.filter((item) => item._id !== enrollment._id));
+      setConfirmingId(null);
+      toast.success("Removed from your courses.");
+    } catch (removeError) {
+      toast.error(removeError.message || "Unable to remove this course.");
+    } finally {
+      setRemovingId(null);
+    }
+  }
 
   function retryLoading() {
     setReloadAttempt((attempt) => attempt + 1);
@@ -267,9 +289,31 @@ function MyCourses() {
                     <span aria-hidden="true">→</span>
                   </Link>
                 ) : (
-                  <p className="my-course-note">
-                    This course is no longer available.
-                  </p>
+                  <>
+                    <p className="my-course-note">
+                      This course is no longer available.
+                    </p>
+
+                    {confirmingId === enrollment._id ? (
+                      <ConfirmInline
+                        message="Remove this course and your progress from your list?"
+                        confirmLabel="Remove"
+                        keepLabel="Keep it"
+                        busyLabel="Removing…"
+                        busy={removingId === enrollment._id}
+                        onConfirm={() => removeEnrollment(enrollment)}
+                        onCancel={() => setConfirmingId(null)}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        className="my-course-remove"
+                        onClick={() => setConfirmingId(enrollment._id)}
+                      >
+                        Remove from my list
+                      </button>
+                    )}
+                  </>
                 )}
               </article>
             );
