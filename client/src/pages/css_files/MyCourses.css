@@ -314,3 +314,20 @@
     transition: none;
   }
 }
+
+.my-course-remove {
+  margin-top: 12px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.my-course-remove:hover {
+  border-color: var(--error);
+  color: var(--error-text);
+}
