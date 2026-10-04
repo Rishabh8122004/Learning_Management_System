@@ -3,6 +3,7 @@ const {
   getStats,
   listCourses,
   listUsers,
+  removeUser,
   getCourse,
   restoreCourse,
   purgeCourse,
@@ -17,6 +18,7 @@ router.use(authMiddleware, adminMiddleware);
 
 router.get('/stats', getStats);
 router.get('/users', listUsers);
+router.delete('/users/:id', removeUser);
 router.get('/courses', listCourses);
 router.get('/courses/:id', getCourse);
 router.patch('/courses/:id/restore', restoreCourse);

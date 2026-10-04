@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ErrorState from "../../components/ErrorState";
+import { useToast } from "../../context/useToast";
 import { apiRequest } from "../../services/apiRequest";
 import { initialsOf } from "../../lib/initials";
 import "../css_files/Admin.css";
@@ -15,6 +16,11 @@ function formatJoined(value) {
 }
 
 function AdminUsers() {
+  const toast = useToast();
+  const [status, setStatus] = useState("all");
+  const [removing, setRemoving] = useState(null);
+  const [typedEmail, setTypedEmail] = useState("");
+  const [isRemoving, setIsRemoving] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -43,6 +49,7 @@ function AdminUsers() {
       try {
         const params = new URLSearchParams({ page: String(page) });
         if (search) params.set("search", search);
+        if (status !== "all") params.set("status", status);
 
         const result = await apiRequest(`/admin/users?${params}`);
         if (isCurrent) setData({ users: result.users || [], pagination: result.pagination || null });
@@ -58,9 +65,35 @@ function AdminUsers() {
     return () => {
       isCurrent = false;
     };
-  }, [search, page, reloadKey]);
+  }, [search, status, page, reloadKey]);
 
   const { users, pagination } = data;
+
+  function startRemoving(person) {
+    setRemoving(person._id);
+    setTypedEmail("");
+  }
+
+  async function removePerson(person) {
+    setIsRemoving(true);
+
+    try {
+      await apiRequest(`/admin/users/${person._id}`, {
+        method: "DELETE",
+        body: JSON.stringify({ email: typedEmail.trim() }),
+      });
+      toast.success(`${person.name} was removed.`);
+      setRemoving(null);
+
+      // If that was the last person on this page, go back one page.
+      if (users.length === 1 && page > 1) setPage(page - 1);
+      else setReloadKey((key) => key + 1);
+    } catch (removeError) {
+      toast.error(removeError.message || "Could not remove this user.");
+    } finally {
+      setIsRemoving(false);
+    }
+  }
 
   return (
     <main className="admin-page">
@@ -81,6 +114,19 @@ function AdminUsers() {
             ? `${pagination.total} ${pagination.total === 1 ? "person" : "people"}${search ? " match your search" : ""}`
             : " "}
         </p>
+
+        <select
+          className="admin-select"
+          aria-label="Filter users"
+          value={status}
+          onChange={(event) => {
+            setStatus(event.target.value);
+            setPage(1);
+          }}
+        >
+          <option value="all">All users</option>
+          <option value="unconfirmed">Email not confirmed</option>
+        </select>
 
         <input
           type="search"
@@ -106,7 +152,9 @@ function AdminUsers() {
       ) : users.length === 0 ? (
         <div className="admin-card admin-empty">
           <h2>No users found</h2>
-          <p>{search ? "Try a different name or email." : "Nobody has registered yet."}</p>
+          <p>
+            {search || status !== "all" ? "Try a different search or filter." : "Nobody has registered yet."}
+          </p>
         </div>
       ) : (
         <ul className="admin-list" aria-busy={isLoading}>
@@ -127,10 +175,58 @@ function AdminUsers() {
                 {person.enrollments} course{person.enrollments === 1 ? "" : "s"}
               </span>
 
+              {!person.emailVerified && (
+                <span className="admin-badge is-draft">
+                  <i aria-hidden="true" />
+                  unconfirmed
+                </span>
+              )}
+
               <span className={`admin-badge ${person.role === "admin" ? "is-published" : ""}`}>
                 <i aria-hidden="true" />
                 {person.role}
               </span>
+
+              {person.role !== "admin" && removing !== person._id && (
+                <button type="button" className="admin-remove" onClick={() => startRemoving(person)}>
+                  Remove
+                </button>
+              )}
+
+              {removing === person._id && (
+                <div className="admin-remove-panel" role="group" aria-label={`Remove ${person.name}`}>
+                  <p>
+                    This permanently deletes <strong>{person.name}</strong>, their {person.enrollments} enrolled course
+                    {person.enrollments === 1 ? "" : "s"}, goals and progress. It cannot be undone. Type{" "}
+                    <strong>{person.email}</strong> to confirm.
+                  </p>
+
+                  <input
+                    type="email"
+                    aria-label={`Type ${person.email} to confirm`}
+                    value={typedEmail}
+                    onChange={(event) => setTypedEmail(event.target.value)}
+                    placeholder={person.email}
+                    autoComplete="off"
+                    autoFocus
+                    disabled={isRemoving}
+                  />
+
+                  <div>
+                    <button type="button" className="admin-quiet" onClick={() => setRemoving(null)} disabled={isRemoving}>
+                      Keep user
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-remove is-confirm"
+                      onClick={() => removePerson(person)}
+                      disabled={isRemoving || typedEmail.trim().toLowerCase() !== person.email}
+                    >
+                      {isRemoving ? "Removing…" : "Remove permanently"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>

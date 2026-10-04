@@ -1,9 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const Enrollment = require('../models/Enrollment');
-const Goal = require('../models/Goal');
-const GoalEntry = require('../models/GoalEntry');
 const safeUser = require('../utils/safeUser');
+const { removeUserAndData } = require('../utils/removeUser');
 const { signToken } = require('./authController');
 
 const SALT_ROUNDS = 10;
@@ -97,13 +95,7 @@ const deleteMe = async (req, res) => {
       return fail(res, 400, 'You are the only admin, so this account cannot be deleted');
     }
 
-    // Everything the user owns, in one place. Courses are shared and are kept.
-    await Promise.all([
-      Enrollment.deleteMany({ user: user._id }),
-      GoalEntry.deleteMany({ user: user._id }),
-      Goal.deleteMany({ user: user._id }),
-    ]);
-    await User.deleteOne({ _id: user._id });
+    await removeUserAndData(user._id);
 
     return res.status(200).json({ success: true, message: 'Account deleted' });
   } catch (err) {

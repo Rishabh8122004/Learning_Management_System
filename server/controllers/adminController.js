@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Course = require('../models/Course');
 const Enrollment = require('../models/Enrollment');
 const User = require('../models/User');
+const { removeUserAndData } = require('../utils/removeUser');
 
 const STATUSES = ['all', 'published', 'draft', 'archived'];
 const DEFAULT_LIMIT = 20;
@@ -102,7 +103,7 @@ const listCourses = async (req, res) => {
 const listUsers = async (req, res) => {
   try {
     const { search = '' } = req.query;
-    for (const value of [search, req.query.page, req.query.limit]) {
+    for (const value of [search, req.query.page, req.query.limit, req.query.status]) {
       if (value !== undefined && typeof value !== 'string') {
         return fail(res, 400, 'Invalid query parameters');
       }
@@ -120,10 +121,12 @@ const listUsers = async (req, res) => {
       const pattern = new RegExp(escapeRegex(text), 'i');
       filter.$or = [{ name: pattern }, { email: pattern }];
     }
+    // Only accounts whose email was never confirmed (the likely fake-email sign-ups).
+    if (req.query.status === 'unconfirmed') filter.emailVerified = false;
 
     const [users, total] = await Promise.all([
       User.find(filter)
-        .select('name email role createdAt')
+        .select('name email role createdAt emailVerified')
         .sort({ createdAt: -1, _id: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -145,12 +148,40 @@ const listUsers = async (req, res) => {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
+        emailVerified: user.emailVerified !== false,
         enrollments: enrollmentsByUser.get(String(user._id)) || 0,
       })),
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (err) {
     console.error('Admin list users error:', err.message);
+    return fail(res, 500, 'Server error');
+  }
+};
+
+// DELETE /api/admin/users/:id  { email }
+// Permanent. Removes the person and everything they own. The admin must repeat the person's email, so a
+// wrong click or a wrong id can never delete anyone. Admins (including yourself) cannot be removed here.
+const removeUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) return fail(res, 400, 'Invalid user ID');
+
+    const typed = req.body && req.body.email;
+    if (typeof typed !== 'string' || !typed.trim()) return fail(res, 400, 'Type the user\'s email to confirm');
+
+    if (String(id) === String(req.user.id)) return fail(res, 400, 'You cannot remove your own account here');
+
+    const user = await User.findById(id).select('email role');
+    if (!user) return fail(res, 404, 'User not found');
+    if (user.role === 'admin') return fail(res, 403, 'Admin accounts cannot be removed here');
+    if (typed.trim().toLowerCase() !== user.email) return fail(res, 400, 'The email does not match this user');
+
+    await removeUserAndData(user._id);
+
+    return res.status(200).json({ success: true, message: 'User removed' });
+  } catch (err) {
+    console.error('Admin remove user error:', err.message);
     return fail(res, 500, 'Server error');
   }
 };
@@ -222,4 +253,4 @@ const purgeCourse = async (req, res) => {
   }
 };
 
-module.exports = { getStats, listCourses, listUsers, getCourse, restoreCourse, purgeCourse };
+module.exports = { getStats, listCourses, listUsers, removeUser, getCourse, restoreCourse, purgeCourse };

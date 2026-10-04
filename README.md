@@ -21,7 +21,7 @@ Trackly does not host that content. It helps you organize it into courses, mark 
 
 **For admins** (role enforced on the server)
 - The notification bell also shows **new users** who registered in the last 14 days (names only, worked out from the account creation date; nothing extra is stored).
-- Overview numbers, a read-only **Users** list (search by name or email), course list with search and status filter.
+- Overview numbers, a **Users** list (search by name or email, filter to unconfirmed emails) where an admin can **remove** a user and all their data after typing the user's email to confirm (admins cannot be removed), course list with search and status filter.
 - Create, edit, publish or unpublish, archive, restore and permanently delete courses (modules and lessons editor with reordering).
 
 Trackly is **not** a marketplace, video platform, social network or payment platform.
@@ -134,7 +134,7 @@ All routes are under `/api`. Routes marked 🔒 need a login token, 🛡 need th
 | Enrollments | 🔒 `GET /enrollments/me`, `POST /enrollments/:courseId`, `DELETE /enrollments/:id`, `POST /enrollments/:id/lessons/:lessonId/complete` |
 | Goals | 🔒 `GET/POST /goals`, `GET/PATCH/DELETE /goals/:id`, `POST /goals/:id/subgoals`, `POST /goals/:id/entries`, `PATCH/DELETE /goals/:id/entries/:entryId` |
 | Notifications | 🔒 `GET /notifications`, `POST /notifications/seen` |
-| Admin | 🛡 `GET /admin/stats`, `GET /admin/users` (search, page), `GET /admin/courses`, `GET /admin/courses/:id`, `PATCH /admin/courses/:id/restore`, `DELETE /admin/courses/:id/purge` |
+| Admin | 🛡 `GET /admin/stats`, `GET /admin/users` (search, status, page), `DELETE /admin/users/:id`, `GET /admin/courses`, `GET /admin/courses/:id`, `PATCH /admin/courses/:id/restore`, `DELETE /admin/courses/:id/purge` |
 
 Responses are JSON: `{ success: true, ... }` on success and `{ success: false, message }` on failure, with matching HTTP status codes
 (400 invalid input, 401 not signed in, 403 not allowed, 404 not found, 409 conflict, 429 too many attempts).
