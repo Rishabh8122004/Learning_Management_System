@@ -338,36 +338,6 @@
    ERROR AND LOADING
 -------------------------------------------------- */
 
-.goals-error {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: var(--space-5);
-  padding: 14px 16px;
-  border: 1px solid color-mix(in srgb, var(--error) 50%, var(--border));
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--error) 6%, transparent);
-  color: var(--error-text);
-}
-
-.goals-error p {
-  margin: 0;
-}
-
-.goals-error button {
-  flex-shrink: 0;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid currentColor;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 650;
-}
-
 .goals-skeleton-today {
   height: 280px;
   margin-bottom: var(--space-5);

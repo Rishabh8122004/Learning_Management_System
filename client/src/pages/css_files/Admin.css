@@ -532,13 +532,6 @@
   flex: none;
 }
 
-.editor-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
 .editor-danger h2 {
   color: var(--error-text);
 }

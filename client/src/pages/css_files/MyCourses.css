@@ -270,35 +270,6 @@
   font-size: var(--text-md);
 }
 
-.my-courses-message {
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.my-courses-error {
-  padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--error) 50%, var(--border));
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--error) 6%, transparent);
-  color: var(--error-text);
-}
-
-.my-courses-error p {
-  margin: 0 0 12px;
-}
-
-.my-courses-error button {
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid currentColor;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 650;
-}
-
 .my-courses-empty {
   padding: var(--space-7) var(--space-5);
   border-style: dashed;

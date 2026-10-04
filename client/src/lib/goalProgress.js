@@ -13,7 +13,7 @@ export function addDays(dateString, amount) {
   return localDateString(date);
 }
 
-export function weekKey(dateString) {
+function weekKey(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
   const day = date.getDay();
 
