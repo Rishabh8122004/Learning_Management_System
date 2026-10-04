@@ -66,19 +66,16 @@ const goalSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     parentGoal: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Goal",
       default: null,
-      index: true,
     },
     rootGoal: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Goal",
       default: null,
-      index: true,
     },
     title: {
       type: String,
@@ -136,6 +133,7 @@ goalSchema.pre("validate", function setRootGoal() {
   }
 });
 
+// Every goal query starts with the user, so these two cover them all (including "all goals of a user").
 goalSchema.index({ user: 1, parentGoal: 1, createdAt: -1 });
 goalSchema.index({ user: 1, rootGoal: 1 });
 
