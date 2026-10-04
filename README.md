@@ -146,6 +146,7 @@ Responses are JSON: `{ success: true, ... }` on success and `{ success: false, m
 - Inputs are validated and whitelisted on the server; lesson and thumbnail links must be `http(s)`.
 - `helmet`, a CORS allow-list, a request size limit and rate limits on sign-in and sensitive actions are enabled.
 - Changing the email (profile): needs the password, a link goes to the NEW address and the email switches only after it is opened; the old address is told about the change.
+- Unconfirmed accounts remove themselves 24 hours after sign-up (a MongoDB expiry index limited to accounts with `emailVerified: false`), so abandoned or fake-email sign-ups do not pile up.
 - Wrong or fake email at sign-up: with the account password, the person can change the email or delete the unconfirmed account from the login page.
 - Email confirmation: new accounts cannot log in until the emailed single-use link (24 hours) is opened; accounts created before this feature count as confirmed; an unconfirmed address that nobody confirmed within a day can be registered by its real owner.
 - Password reset: only a hash of the emailed token is stored, it expires after 60 minutes and works once, the reply never reveals whether an email is registered, and every device is signed out after a reset.

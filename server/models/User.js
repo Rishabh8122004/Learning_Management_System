@@ -53,4 +53,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, collection: 'users' }
 );
 
+// Accounts whose email was never confirmed delete themselves when the confirmation link expires (24 hours after
+// sign-up, or after the last "resend"). MongoDB checks about once a minute. The partial filter means ONLY accounts
+// with emailVerified:false can ever be removed this way, so a confirmed person is never touched, even by mistake.
+// Unconfirmed accounts never had a login, so they own no goals or enrollments that would need cleaning up.
+userSchema.index({ verifyEmailExpires: 1 }, { expireAfterSeconds: 0, partialFilterExpression: { emailVerified: false } });
+
 module.exports = mongoose.model('User', userSchema);
