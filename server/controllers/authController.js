@@ -5,9 +5,9 @@ const User = require('../models/User');
 const safeUser = require('../utils/safeUser');
 const { sendMail } = require('../utils/mailer');
 const { removeUserAndData } = require('../utils/removeUser');
+const { isEmail } = require('../utils/validate');
 
 const SALT_ROUNDS = 10;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Used so login takes similar time whether or not the email exists.
 const DUMMY_HASH = bcrypt.hashSync('dummy-password', SALT_ROUNDS);
 
@@ -47,11 +47,16 @@ const newEmailToken = () => {
 // not theirs and never confirmed it. After a day the real owner may use it; the unconfirmed account (which never
 // had a login) is replaced. Returns null when the address is free, otherwise { status, message }.
 const claimEmail = async (normalizedEmail) => {
-  const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt');
+  const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt verifyEmailExpires');
   if (!existing) return null;
 
+  // "Stale" means its confirmation link has run out, which is also the moment the expiry index removes it.
+  // (A resend moves that moment forward, so a fresh resend protects the account for another day.)
   const unconfirmed = existing.emailVerified === false;
-  const stale = unconfirmed && Date.now() - new Date(existing.createdAt).getTime() > VERIFY_HOURS * 3600 * 1000;
+  const lapsedAt = existing.verifyEmailExpires
+    ? new Date(existing.verifyEmailExpires).getTime()
+    : new Date(existing.createdAt).getTime() + VERIFY_HOURS * 3600 * 1000;
+  const stale = unconfirmed && lapsedAt < Date.now();
 
   if (!stale) {
     return {
@@ -111,7 +116,7 @@ const register = async (req, res) => {
     if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
       return fail(res, 400, 'Name must be between 2 and 100 characters');
     }
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
     // bcrypt only uses the first 72 bytes, so cap the length.
@@ -195,7 +200,7 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body || {};
 
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
 
@@ -223,7 +228,7 @@ const forgotPassword = async (req, res) => {
           `Hi ${user.name},\n\nUse this link to choose a new password (valid for ${RESET_MINUTES} minutes):\n${link}\n\n` +
           'If you did not ask for this, you can ignore this email. Your password will not change.',
         html:
-          `<p>Hi ${user.name.replace(/[<>&"]/g, '')},</p>` +
+          `<p>Hi ${plainName(user.name)},</p>` +
           `<p>Use this link to choose a new password (valid for ${RESET_MINUTES} minutes):</p>` +
           `<p><a href="${link}">Reset my password</a></p>` +
           '<p>If you did not ask for this, you can ignore this email. Your password will not change.</p>',
@@ -314,7 +319,7 @@ const resendVerification = async (req, res) => {
   try {
     const { email } = req.body || {};
 
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
 
@@ -346,7 +351,7 @@ const changeUnconfirmedEmail = async (req, res) => {
     const found = await unconfirmedAccount(email, password);
     if (!found.user) return fail(res, found.status, found.message);
 
-    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+    if (!isEmail(newEmail)) {
       return fail(res, 400, 'A valid new email is required');
     }
     const normalized = newEmail.trim().toLowerCase();
@@ -412,7 +417,7 @@ const requestEmailChange = async (req, res) => {
     if (keys.some((key) => !['newEmail', 'password'].includes(key))) {
       return fail(res, 400, 'Provide newEmail and password');
     }
-    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+    if (!isEmail(newEmail)) {
       return fail(res, 400, 'A valid new email is required');
     }
 

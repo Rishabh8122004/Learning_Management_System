@@ -67,3 +67,14 @@ describe('rate limiting', () => {
     }
   });
 });
+
+describe('general request limit', () => {
+  test('every API answer carries the limit headers, but the health check is not counted', async () => {
+    const counted = await request(app).get('/api/does-not-exist');
+    assert.ok(counted.headers['ratelimit-limit'] || counted.headers['ratelimit']);
+
+    const health = await request(app).get('/api/health');
+    assert.equal(health.status, 200);
+    assert.equal(health.headers['ratelimit-limit'], undefined);
+  });
+});

@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
+      maxlength: [254, 'Email must be at most 254 characters'],
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format'],
     },
     // Stores ONLY the hash. Hashing happens in the auth controller later.

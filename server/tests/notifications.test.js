@@ -145,6 +145,7 @@ describe('admin: new users', () => {
     assert.equal(items[0].unread, true);
     assert.equal(items[1].unread, false);
     assert.deepEqual(userFilter._id, { $ne: 'u1' });
+    assert.deepEqual(userFilter.emailVerified, { $ne: false }, 'unconfirmed sign-ups are not announced');
     assert.ok(userFilter.createdAt.$gte instanceof Date);
     assert.equal(JSON.stringify(body).includes('email'), false);
     role = 'user';

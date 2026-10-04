@@ -17,8 +17,8 @@ const enrollmentSchema = new mongoose.Schema(
   { timestamps: true, collection: 'enrollments' }
 );
 
+// One enrollment per user per course; it also serves "all enrollments of a user".
 enrollmentSchema.index({ user: 1, course: 1 }, { unique: true });
-enrollmentSchema.index({ user: 1 });
 enrollmentSchema.index({ course: 1 });
 
 module.exports = mongoose.model('Enrollment', enrollmentSchema);

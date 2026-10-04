@@ -6,13 +6,11 @@ const goalEntrySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Goal",
       required: true,
-      index: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     // A habit check-in or a quantity added toward a target.
     value: {
@@ -46,6 +44,7 @@ const goalEntrySchema = new mongoose.Schema(
   },
 );
 
+// Starts with the user, so it also serves "all entries of a user".
 goalEntrySchema.index({ user: 1, goal: 1, occurredAt: -1 });
 // One entry per goal per day; createEntry sums same-day logs into it.
 goalEntrySchema.index({ goal: 1, localDate: 1 }, { unique: true });

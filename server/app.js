@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const goalRoutes = require("./routes/goalRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -24,6 +25,20 @@ const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
 
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: "100kb" }));
+
+// A generous limit for everything under /api, so one visitor cannot hammer the database. The stricter limits on
+// sign-in and other sensitive routes sit on top of this. The health check is left out so uptime pings never count.
+app.use(
+    "/api",
+    rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 1000,
+        standardHeaders: true,
+        legacyHeaders: false,
+        skip: (req) => req.path === "/health",
+        message: { success: false, message: "Too many requests, please slow down." }
+    })
+);
 
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/courses', courseRoutes);

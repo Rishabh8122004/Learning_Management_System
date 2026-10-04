@@ -3,13 +3,13 @@ const Course = require('../models/Course');
 const Enrollment = require('../models/Enrollment');
 const User = require('../models/User');
 const { removeUserAndData } = require('../utils/removeUser');
+const { escapeRegex } = require('../utils/validate');
 
 const STATUSES = ['all', 'published', 'draft', 'archived'];
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
 
 const fail = (res, status, message) => res.status(status).json({ success: false, message });
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 const statusOf = (course) => {
   if (course.deletedAt) return 'archived';
@@ -26,7 +26,7 @@ const getStats = async (req, res) => {
       Course.countDocuments({ published: true, deletedAt: null }),
       Course.countDocuments({ published: false, deletedAt: null }),
       Course.countDocuments({ deletedAt: { $ne: null } }),
-      User.countDocuments({}),
+      User.countDocuments({ emailVerified: { $ne: false } }), // people, not sign-ups that never confirmed their email
       Enrollment.countDocuments({}),
     ]);
 

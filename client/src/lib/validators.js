@@ -8,6 +8,7 @@ export function validateEmail(value) {
 
   if (!email) return "Enter your email address.";
   if (!EMAIL_PATTERN.test(email)) return "Enter a valid email, like name@example.com.";
+  if (email.length > 254) return "That email is too long. Use 254 characters or fewer.";
 
   return "";
 }

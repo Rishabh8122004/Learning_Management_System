@@ -23,6 +23,7 @@ const deadlineText = (targetDate, now) => {
 // Nothing is stored per notification: the list is worked out from courses and goals
 // each time. The only thing saved is when the user last opened the bell.
 // Admins also see people who registered recently (computed from User.createdAt, nothing extra is stored).
+// Accounts that never confirmed their email are not people yet, so they are left out.
 const getNotifications = async (req, res) => {
   try {
     const now = new Date();
@@ -60,7 +61,7 @@ const getNotifications = async (req, res) => {
         .limit(10)
         .lean(),
       isAdmin
-        ? User.find({ _id: { $ne: req.user.id }, createdAt: { $gte: newUserSince } })
+        ? User.find({ _id: { $ne: req.user.id }, emailVerified: { $ne: false }, createdAt: { $gte: newUserSince } })
             .select('name createdAt')
             .sort({ createdAt: -1 })
             .limit(5)

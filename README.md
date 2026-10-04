@@ -130,8 +130,8 @@ All routes are under `/api`. Routes marked 🔒 need a login token, 🛡 need th
 | Health | `GET /health` |
 | Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/verify-email`, `POST /auth/resend-verification`, `POST /auth/unconfirmed/change-email`, `POST /auth/unconfirmed/delete`, `POST /auth/confirm-email-change`, `POST /auth/forgot-password`, `POST /auth/reset-password`, 🔒 `GET /auth/me` |
 | Users | 🔒 `PATCH /users/me`, `PATCH /users/me/password`, `POST /users/me/email`, `DELETE /users/me` |
-| Courses | `GET /courses` (search, category, level, page), `GET /courses/:id`; 🛡 `POST /courses`, `PUT /courses/:id`, `DELETE /courses/:id` (archive) |
-| Enrollments | 🔒 `GET /enrollments/me`, `POST /enrollments/:courseId`, `DELETE /enrollments/:id`, `POST /enrollments/:id/lessons/:lessonId/complete` |
+| Courses | `GET /courses` (search, category, level, page), `GET /courses/categories`, `GET /courses/:id`; 🛡 `POST /courses`, `PUT /courses/:id`, `DELETE /courses/:id` (archive) |
+| Enrollments | 🔒 `GET /enrollments/me`, `GET /enrollments/:id`, `POST /enrollments/:courseId`, `DELETE /enrollments/:id`, `POST /enrollments/:id/lessons/:lessonId/complete` |
 | Goals | 🔒 `GET/POST /goals`, `GET/PATCH/DELETE /goals/:id`, `POST /goals/:id/subgoals`, `POST /goals/:id/entries`, `PATCH/DELETE /goals/:id/entries/:entryId` |
 | Notifications | 🔒 `GET /notifications`, `POST /notifications/seen` |
 | Admin | 🛡 `GET /admin/stats`, `GET /admin/users` (search, status, page), `DELETE /admin/users/:id`, `GET /admin/courses`, `GET /admin/courses/:id`, `PATCH /admin/courses/:id/restore`, `DELETE /admin/courses/:id/purge` |
@@ -144,7 +144,7 @@ Responses are JSON: `{ success: true, ... }` on success and `{ success: false, m
 - Passwords are hashed (bcrypt); login tokens carry a version so a password change signs out other devices.
 - Every private resource is filtered by the signed-in user; admin power is checked on the server, not only hidden in the UI.
 - Inputs are validated and whitelisted on the server; lesson and thumbnail links must be `http(s)`.
-- `helmet`, a CORS allow-list, a request size limit and rate limits on sign-in and sensitive actions are enabled.
+- `helmet`, a CORS allow-list, a request size limit, a general request limit (1000 per 15 minutes per visitor) and stricter limits on sign-in and sensitive actions are enabled.
 - Changing the email (profile): needs the password, a link goes to the NEW address and the email switches only after it is opened; the old address is told about the change.
 - Unconfirmed accounts remove themselves 24 hours after sign-up (a MongoDB expiry index limited to accounts with `emailVerified: false`), so abandoned or fake-email sign-ups do not pile up.
 - Wrong or fake email at sign-up: with the account password, the person can change the email or delete the unconfirmed account from the login page.

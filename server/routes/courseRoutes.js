@@ -4,6 +4,7 @@ const {
   updateCourse,
   deleteCourse,
   listCourses,
+  listCategories,
   getCourse,
 } = require('../controllers/courseController');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -13,6 +14,7 @@ const router = express.Router();
 
 // Public
 router.get('/', listCourses);
+router.get('/categories', listCategories);
 router.get('/:id', getCourse);
 
 // Admin only

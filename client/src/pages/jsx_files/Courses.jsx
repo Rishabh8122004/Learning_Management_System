@@ -1,16 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import ErrorState from "../../components/ErrorState";
 import { apiRequest } from "../../services/apiRequest";
 import "../css_files/Courses.css";
-
-const CATEGORIES = [
-  "Programming",
-  "Web Development",
-  "Data Science",
-  "Database",
-  "Other",
-];
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
@@ -34,6 +26,10 @@ function Courses() {
     category: searchParams.get("category") || "",
     level: searchParams.get("level") || "",
   });
+  // What is typed in the search box. It is applied to the list a moment after typing stops.
+  const [searchText, setSearchText] = useState(() => searchParams.get("search") || "");
+  const appliedSearch = useRef(searchText);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState("");
@@ -43,6 +39,43 @@ function Courses() {
   const hasFilters = Boolean(
     filters.search.trim() || filters.category || filters.level,
   );
+
+  // The category list comes from the courses that exist, so a new category appears without a code change.
+  useEffect(() => {
+    let cancelled = false;
+
+    apiRequest("/courses/categories")
+      .then((data) => {
+        if (!cancelled) setCategories(data.categories || []);
+      })
+      .catch(() => {
+        // The filter simply stays on "All categories"; the courses themselves still load.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (searchText === appliedSearch.current) return undefined;
+
+    const timer = setTimeout(() => {
+      appliedSearch.current = searchText;
+      setFilters((current) => ({ ...current, search: searchText }));
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+
+        if (searchText) next.set("search", searchText);
+        else next.delete("search");
+
+        next.set("page", "1");
+        return next;
+      });
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchText, setSearchParams]);
 
   useEffect(() => {
     // A newer request replaces this one, so a slow answer can never overwrite fresher results.
@@ -120,6 +153,8 @@ function Courses() {
   };
 
   const clearFilters = () => {
+    appliedSearch.current = "";
+    setSearchText("");
     setFilters({ search: "", category: "", level: "" });
     setSearchParams({});
   };
@@ -162,8 +197,8 @@ function Courses() {
           <input
             type="search"
             placeholder="Search courses"
-            value={filters.search}
-            onChange={(event) => updateFilter("search", event.target.value)}
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
           />
         </label>
 
@@ -175,7 +210,10 @@ function Courses() {
             onChange={(event) => updateFilter("category", event.target.value)}
           >
             <option value="">All categories</option>
-            {CATEGORIES.map((category) => (
+            {(filters.category && !categories.some((name) => name.toLowerCase() === filters.category.toLowerCase())
+              ? [filters.category, ...categories]
+              : categories
+            ).map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>

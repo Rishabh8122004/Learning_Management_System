@@ -1,15 +1,14 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Trackly API: Express and MongoDB backend for the Trackly learning organizer",
+  "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "node --test \"tests/*.test.js\""
   },
-  "keywords": [],
-  "author": "",
+  "private": true,
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

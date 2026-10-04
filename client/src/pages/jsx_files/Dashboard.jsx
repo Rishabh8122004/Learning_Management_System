@@ -126,7 +126,9 @@ function Dashboard() {
       )
     : 0;
 
-  const continueLearningCourses = [...activeCourses]
+  // Only courses that can still be opened; an archived course would lead to a "not found" page.
+  const continueLearningCourses = activeCourses
+    .filter((enrollment) => enrollment.courseAvailable !== false)
     .sort(
       (a, b) =>
         Number(b.progress?.percentage || 0) -

@@ -104,6 +104,5 @@ const courseSchema = new mongoose.Schema(
 );
 
 courseSchema.index({ category: 1, level: 1 });
-courseSchema.index({ title: 'text', description: 'text', tags: 'text' });
 
 module.exports = mongoose.model('Course', courseSchema);

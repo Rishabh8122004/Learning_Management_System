@@ -1,7 +1,7 @@
 const Course = require('../models/Course');
 const { recomputeEnrollmentProgress } = require('../utils/progress');
+const { isValidId, escapeRegex } = require('../utils/validate');
 
-const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const LEVELS = ['beginner', 'intermediate', 'advanced'];
 const ALLOWED_FIELDS = [
   'title',
@@ -17,8 +17,6 @@ const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 
 const fail = (res, status, message) => res.status(status).json({ success: false, message });
-const isValidId = (id) => typeof id === 'string' && OBJECT_ID_REGEX.test(id);
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Maps Mongoose validation/cast errors to 400, everything else to 500.
 const handleError = (res, err, label) => {
@@ -43,6 +41,13 @@ const pickAllowed = (body) => {
   return data;
 };
 
+// The lists must really be lists. (A null "modules" used to be saved and then crashed the progress update.)
+const shapeProblem = (data) => {
+  if (data.modules !== undefined && !Array.isArray(data.modules)) return 'modules must be a list';
+  if (data.tags !== undefined && !Array.isArray(data.tags)) return 'tags must be a list';
+  return null;
+};
+
 const adminView = (course) => {
   const obj = course.toObject();
   delete obj.__v;
@@ -53,6 +58,9 @@ const adminView = (course) => {
 const createCourse = async (req, res) => {
   try {
     const data = pickAllowed(req.body);
+
+    const problem = shapeProblem(data);
+    if (problem) return fail(res, 400, problem);
 
     // Legacy field: always the creating admin, never taken from the request.
     data.instructor = req.user.id;
@@ -76,6 +84,9 @@ const updateCourse = async (req, res) => {
 
     const data = pickAllowed(req.body);
     if (Object.keys(data).length === 0) return fail(res, 400, 'No valid fields to update');
+
+    const problem = shapeProblem(data);
+    if (problem) return fail(res, 400, problem);
 
     const course = await Course.findById(id);
     if (!course || course.deletedAt) return fail(res, 404, 'Course not found');
@@ -131,8 +142,15 @@ const listCourses = async (req, res) => {
 
     const filter = { published: true, deletedAt: null };
 
-    const searchText = search ? search.trim() : '';
-    if (searchText) filter.$text = { $search: searchText };
+    // Every word typed must appear (as part of a word) in the title, description, category or tags, so "reac"
+    // finds React and "type script" finds TypeScript courses. Whole-word text search would find neither.
+    const terms = (search ? search.trim() : '').split(/\s+/).filter(Boolean).slice(0, 6);
+    if (terms.length) {
+      filter.$and = terms.map((term) => {
+        const pattern = new RegExp(escapeRegex(term), 'i');
+        return { $or: [{ title: pattern }, { description: pattern }, { category: pattern }, { tags: pattern }] };
+      });
+    }
 
     if (category && category.trim()) {
       filter.category = new RegExp(`^${escapeRegex(category.trim())}$`, 'i');
@@ -145,9 +163,7 @@ const listCourses = async (req, res) => {
     }
 
     // Stable sort so pagination does not skip/repeat items.
-    const sort = searchText
-      ? { score: { $meta: 'textScore' }, _id: 1 }
-      : { createdAt: -1, _id: -1 };
+    const sort = { createdAt: -1, _id: -1 };
 
     const [courses, total] = await Promise.all([
       Course.find(filter)
@@ -176,6 +192,26 @@ const listCourses = async (req, res) => {
   }
 };
 
+// GET /api/courses/categories  (public)
+// The categories that actually exist on published courses, for the filter on the courses page. Different
+// capital letters count as one category (the filter itself ignores capitals).
+const listCategories = async (req, res) => {
+  try {
+    const names = await Course.distinct('category', { published: true, deletedAt: null });
+
+    const byLowerCase = new Map();
+    for (const name of names) {
+      const key = String(name).trim().toLowerCase();
+      if (key && !byLowerCase.has(key)) byLowerCase.set(key, String(name).trim());
+    }
+
+    const categories = [...byLowerCase.values()].sort((a, b) => a.localeCompare(b));
+    return res.status(200).json({ success: true, categories });
+  } catch (err) {
+    return handleError(res, err, 'List categories');
+  }
+};
+
 // GET /api/courses/:id  (public)
 const getCourse = async (req, res) => {
   try {
@@ -194,4 +230,4 @@ const getCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, updateCourse, deleteCourse, listCourses, getCourse };
+module.exports = { createCourse, updateCourse, deleteCourse, listCourses, listCategories, getCourse };
