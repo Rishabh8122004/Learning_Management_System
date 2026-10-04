@@ -15,6 +15,7 @@ import Register from "./pages/jsx_files/Register";
 import ForgotPassword from "./pages/jsx_files/ForgotPassword";
 import ResetPassword from "./pages/jsx_files/ResetPassword";
 import VerifyEmail from "./pages/jsx_files/VerifyEmail";
+import ConfirmEmailChange from "./pages/jsx_files/ConfirmEmailChange";
 import Dashboard from "./pages/jsx_files/Dashboard";
 import MyCourses from "./pages/jsx_files/MyCourses";
 import TrackYourGoals from "./pages/jsx_files/TrackYourGoals";
@@ -123,6 +124,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />

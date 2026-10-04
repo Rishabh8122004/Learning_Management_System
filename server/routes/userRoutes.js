@@ -1,6 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { updateMe, changePassword, deleteMe } = require('../controllers/userController');
+const { requestEmailChange } = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.use(authMiddleware);
 
 router.patch('/me', updateMe);
 router.patch('/me/password', sensitiveLimiter, changePassword);
+router.post('/me/email', sensitiveLimiter, requestEmailChange);
 router.delete('/me', sensitiveLimiter, deleteMe);
 
 module.exports = router;

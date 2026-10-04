@@ -13,6 +13,7 @@ import { useToast } from "../../context/useToast";
 import {
   firstErrorKey,
   hasErrors,
+  validateEmail,
   validateMatch,
   validateName,
   validateNewPassword,
@@ -210,6 +211,103 @@ function SnapshotCard() {
           onRetry={() => setReloadKey((key) => key + 1)}
         />
       )}
+    </section>
+  );
+}
+
+function EmailCard({ user }) {
+  const toast = useToast();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [sentTo, setSentTo] = useState("");
+
+  function update(field) {
+    return (event) => {
+      setForm((old) => ({ ...old, [field]: event.target.value }));
+      setErrors((old) => (old[field] ? { ...old, [field]: "" } : old));
+    };
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const found = {
+      email: validateEmail(form.email),
+      password: validateRequired(form.password, "Enter your password to confirm."),
+    };
+
+    setErrors(found);
+
+    if (hasErrors(found)) {
+      document.getElementById({ email: "new-email", password: "email-password" }[firstErrorKey(found)])?.focus();
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const data = await apiRequest("/users/me/email", {
+        method: "POST",
+        body: JSON.stringify({ newEmail: form.email.trim(), password: form.password }),
+      });
+
+      if (data.emailSent) {
+        setSentTo(data.email);
+        setForm({ email: "", password: "" });
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="profile-card" aria-labelledby="email-heading">
+      <h2 id="email-heading">Change email</h2>
+
+      <p className="profile-muted">
+        Your email is <strong>{user.email}</strong>. We send a link to the new address, and your email changes only
+        after you click it.
+      </p>
+
+      {sentTo && (
+        <p className="profile-match is-met" role="status">
+          Link sent to {sentTo}. Open it to finish (check spam too).
+        </p>
+      )}
+
+      <form className="profile-form" onSubmit={handleSubmit} noValidate>
+        <label htmlFor="new-email">New email</label>
+        <input
+          id="new-email"
+          type="email"
+          autoComplete="email"
+          value={form.email}
+          onChange={update("email")}
+          aria-invalid={errors.email ? "true" : undefined}
+          aria-describedby={errors.email ? "new-email-error" : undefined}
+        />
+        <FieldError id="new-email-error" message={errors.email} />
+
+        <PasswordField
+          id="email-password"
+          label="Your password"
+          autoComplete="current-password"
+          value={form.password}
+          onChange={update("password")}
+          error={errors.password}
+        />
+
+        <div>
+          <button type="submit" disabled={saving}>
+            {saving ? "Sending…" : "Send confirmation link"}
+          </button>
+        </div>
+      </form>
     </section>
   );
 }
@@ -440,6 +538,7 @@ function Profile() {
         }}
       />
       <SnapshotCard />
+      <EmailCard user={user} />
       <PasswordCard onChanged={replaceToken} />
       <DangerCard onDeleted={handleDeleted} />
     </main>

@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
     emailVerified: { type: Boolean, default: true },
     verifyEmailHash: { type: String, default: null, select: false },
     verifyEmailExpires: { type: Date, default: null, select: false },
+    // Changing the email: the new address waits here until its owner clicks the emailed link.
+    pendingEmail: { type: String, default: null, select: false, lowercase: true, trim: true },
+    pendingEmailHash: { type: String, default: null, select: false },
+    pendingEmailExpires: { type: Date, default: null, select: false },
     // Password reset: only a hash of the emailed token is stored, and it expires. Both are cleared once used.
     resetPasswordHash: { type: String, default: null, select: false },
     resetPasswordExpires: { type: Date, default: null, select: false },
@@ -48,5 +52,11 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true, collection: 'users' }
 );
+
+// Accounts whose email was never confirmed delete themselves when the confirmation link expires (24 hours after
+// sign-up, or after the last "resend"). MongoDB checks about once a minute. The partial filter means ONLY accounts
+// with emailVerified:false can ever be removed this way, so a confirmed person is never touched, even by mistake.
+// Unconfirmed accounts never had a login, so they own no goals or enrollments that would need cleaning up.
+userSchema.index({ verifyEmailExpires: 1 }, { expireAfterSeconds: 0, partialFilterExpression: { emailVerified: false } });
 
 module.exports = mongoose.model('User', userSchema);
