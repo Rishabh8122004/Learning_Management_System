@@ -16,7 +16,7 @@ Trackly does not host that content. It helps you organize it into courses, mark 
   - Log progress, edit or undo it, see a 7-day habit history, a 12-week activity grid and celebration moments when you reach something real.
 - **Dashboard:** greeting, totals, continue-learning, goals "Today" panel.
 - **Notifications bell:** new courses, deadline reminders, a daily thought (computed from real data).
-- **Profile:** edit name, change password, delete account.
+- **Profile:** edit name, change email (confirmed by link), change password, delete account.
 - Light and dark themes with an animated switch, responsive layout and accessible controls.
 
 **For admins** (role enforced on the server)
@@ -128,8 +128,8 @@ All routes are under `/api`. Routes marked 🔒 need a login token, 🛡 need th
 | Area | Endpoints |
 |---|---|
 | Health | `GET /health` |
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/verify-email`, `POST /auth/resend-verification`, `POST /auth/unconfirmed/change-email`, `POST /auth/unconfirmed/delete`, `POST /auth/forgot-password`, `POST /auth/reset-password`, 🔒 `GET /auth/me` |
-| Users | 🔒 `PATCH /users/me`, `PATCH /users/me/password`, `DELETE /users/me` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/verify-email`, `POST /auth/resend-verification`, `POST /auth/unconfirmed/change-email`, `POST /auth/unconfirmed/delete`, `POST /auth/confirm-email-change`, `POST /auth/forgot-password`, `POST /auth/reset-password`, 🔒 `GET /auth/me` |
+| Users | 🔒 `PATCH /users/me`, `PATCH /users/me/password`, `POST /users/me/email`, `DELETE /users/me` |
 | Courses | `GET /courses` (search, category, level, page), `GET /courses/:id`; 🛡 `POST /courses`, `PUT /courses/:id`, `DELETE /courses/:id` (archive) |
 | Enrollments | 🔒 `GET /enrollments/me`, `POST /enrollments/:courseId`, `DELETE /enrollments/:id`, `POST /enrollments/:id/lessons/:lessonId/complete` |
 | Goals | 🔒 `GET/POST /goals`, `GET/PATCH/DELETE /goals/:id`, `POST /goals/:id/subgoals`, `POST /goals/:id/entries`, `PATCH/DELETE /goals/:id/entries/:entryId` |
@@ -145,6 +145,7 @@ Responses are JSON: `{ success: true, ... }` on success and `{ success: false, m
 - Every private resource is filtered by the signed-in user; admin power is checked on the server, not only hidden in the UI.
 - Inputs are validated and whitelisted on the server; lesson and thumbnail links must be `http(s)`.
 - `helmet`, a CORS allow-list, a request size limit and rate limits on sign-in and sensitive actions are enabled.
+- Changing the email (profile): needs the password, a link goes to the NEW address and the email switches only after it is opened; the old address is told about the change.
 - Wrong or fake email at sign-up: with the account password, the person can change the email or delete the unconfirmed account from the login page.
 - Email confirmation: new accounts cannot log in until the emailed single-use link (24 hours) is opened; accounts created before this feature count as confirmed; an unconfirmed address that nobody confirmed within a day can be registered by its real owner.
 - Password reset: only a hash of the emailed token is stored, it expires after 60 minutes and works once, the reply never reveals whether an email is registered, and every device is signed out after a reset.

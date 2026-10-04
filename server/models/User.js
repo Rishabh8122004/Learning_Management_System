@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
     emailVerified: { type: Boolean, default: true },
     verifyEmailHash: { type: String, default: null, select: false },
     verifyEmailExpires: { type: Date, default: null, select: false },
+    // Changing the email: the new address waits here until its owner clicks the emailed link.
+    pendingEmail: { type: String, default: null, select: false, lowercase: true, trim: true },
+    pendingEmailHash: { type: String, default: null, select: false },
+    pendingEmailExpires: { type: Date, default: null, select: false },
     // Password reset: only a hash of the emailed token is stored, and it expires. Both are cleared once used.
     resetPasswordHash: { type: String, default: null, select: false },
     resetPasswordExpires: { type: Date, default: null, select: false },

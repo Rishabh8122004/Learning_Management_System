@@ -401,6 +401,117 @@ const deleteUnconfirmedAccount = async (req, res) => {
   }
 };
 
+// POST /api/users/me/email  { newEmail, password }   (signed in)
+// The email does not change yet: a link goes to the NEW address, and only opening it switches the account over.
+// So an address that is not the person's own can never be attached to an account.
+const requestEmailChange = async (req, res) => {
+  try {
+    const { newEmail, password } = req.body || {};
+    const keys = Object.keys(req.body || {});
+
+    if (keys.some((key) => !['newEmail', 'password'].includes(key))) {
+      return fail(res, 400, 'Provide newEmail and password');
+    }
+    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+      return fail(res, 400, 'A valid new email is required');
+    }
+
+    // A wrong password is a 400, never 401: the website treats 401 as "session expired" and logs the person out.
+    const user = await User.findById(req.user.id);
+    if (!user || typeof password !== 'string' || !password || !(await bcrypt.compare(password, user.passwordHash))) {
+      return fail(res, 400, 'Password is incorrect');
+    }
+
+    const normalized = newEmail.trim().toLowerCase();
+    if (normalized === user.email) return fail(res, 400, 'That is already your email');
+
+    const taken = await User.findOne({ email: normalized }).select('_id');
+    if (taken) return fail(res, 409, 'Email is already registered');
+
+    const { token, hash } = newEmailToken();
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          pendingEmail: normalized,
+          pendingEmailHash: hash,
+          pendingEmailExpires: new Date(Date.now() + VERIFY_HOURS * 3600 * 1000),
+        },
+      }
+    );
+
+    const link = `${appUrl()}/confirm-email-change?token=${token}`;
+    const emailSent = await sendMail({
+      to: normalized,
+      subject: 'Confirm your new Trackly email',
+      text:
+        `Hi ${user.name},\n\nConfirm that this is your new email for Trackly (valid for ${VERIFY_HOURS} hours):\n${link}\n\n` +
+        'If you did not ask for this, ignore this email. Nothing will change.',
+      html:
+        `<p>Hi ${plainName(user.name)},</p><p>Confirm that this is your new email for Trackly (valid for ${VERIFY_HOURS} hours):</p>` +
+        `<p><a href="${link}">Confirm my new email</a></p><p>If you did not ask for this, ignore this email. Nothing will change.</p>`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      emailSent,
+      email: normalized,
+      message: emailSent
+        ? 'Check your new inbox and click the link to finish. Your email changes only after that.'
+        : 'We could not send the confirmation email right now. Please try again in a few minutes.',
+    });
+  } catch (err) {
+    console.error('Request email change error:', err.message);
+    return fail(res, 500, 'Server error');
+  }
+};
+
+// POST /api/auth/confirm-email-change  { token }
+const confirmEmailChange = async (req, res) => {
+  try {
+    const { token } = req.body || {};
+
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token)) {
+      return fail(res, 400, 'This confirmation link is invalid or has expired');
+    }
+
+    const user = await User.findOne({
+      pendingEmailHash: hashToken(token),
+      pendingEmailExpires: { $gt: new Date() },
+    }).select('+pendingEmail email name');
+
+    if (!user || !user.pendingEmail) {
+      return fail(res, 400, 'This confirmation link is invalid or has expired');
+    }
+
+    const taken = await User.findOne({ email: user.pendingEmail }).select('_id');
+    if (taken) return fail(res, 409, 'That email is now used by another account');
+
+    const oldEmail = user.email;
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: { email: user.pendingEmail, emailVerified: true },
+        $unset: { pendingEmail: '', pendingEmailHash: '', pendingEmailExpires: '' },
+      }
+    );
+
+    // Tell the old address too, so a change the owner did not make gets noticed. Not awaited on purpose.
+    sendMail({
+      to: oldEmail,
+      subject: 'Your Trackly email was changed',
+      text: `The email on your Trackly account was changed to ${user.pendingEmail}. If this was not you, reset your password right away.`,
+      html: `<p>The email on your Trackly account was changed to ${plainName(user.pendingEmail)}. If this was not you, reset your password right away.</p>`,
+    });
+
+    return res.status(200).json({ success: true, message: 'Your email has been changed.', email: user.pendingEmail });
+  } catch (err) {
+    if (err && err.code === 11000) return fail(res, 409, 'That email is now used by another account');
+    console.error('Confirm email change error:', err.message);
+    return fail(res, 500, 'Server error');
+  }
+};
+
 // GET /api/auth/me  (protected by authMiddleware)
 const getMe = async (req, res) => {
   try {
@@ -426,4 +537,6 @@ module.exports = {
   resendVerification,
   changeUnconfirmedEmail,
   deleteUnconfirmedAccount,
+  requestEmailChange,
+  confirmEmailChange,
 };

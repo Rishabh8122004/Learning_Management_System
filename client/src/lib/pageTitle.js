@@ -8,6 +8,7 @@ const TITLES = [
   [/^\/forgot-password$/, "Forgot password"],
   [/^\/reset-password$/, "Reset password"],
   [/^\/verify-email$/, "Confirm email"],
+  [/^\/confirm-email-change$/, "Confirm new email"],
   [/^\/dashboard$/, "Dashboard"],
   [/^\/my-courses$/, "My Courses"],
   [/^\/goals$/, "Track Your Goals"],

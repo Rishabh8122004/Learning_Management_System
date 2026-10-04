@@ -2,7 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const {
     register, login, getMe, forgotPassword, resetPassword, verifyEmail, resendVerification,
-    changeUnconfirmedEmail, deleteUnconfirmedAccount
+    changeUnconfirmedEmail, deleteUnconfirmedAccount, confirmEmailChange
 } = require("../controllers/authController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -39,6 +39,7 @@ router.post("/verify-email", authRateLimiter, verifyEmail);
 router.post("/resend-verification", forgotRateLimiter, resendVerification);
 router.post("/unconfirmed/change-email", authRateLimiter, changeUnconfirmedEmail);
 router.post("/unconfirmed/delete", authRateLimiter, deleteUnconfirmedAccount);
+router.post("/confirm-email-change", authRateLimiter, confirmEmailChange);
 router.get("/me", authMiddleware, getMe);
 
 module.exports = router;

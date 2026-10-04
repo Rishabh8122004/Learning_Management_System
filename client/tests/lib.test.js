@@ -417,5 +417,6 @@ describe("password recovery pages", () => {
     assert.equal(titleFor("/forgot-password"), "Forgot password · Trackly");
     assert.equal(titleFor("/reset-password"), "Reset password · Trackly");
     assert.equal(titleFor("/verify-email"), "Confirm email · Trackly");
+    assert.equal(titleFor("/confirm-email-change"), "Confirm new email · Trackly");
   });
 });
