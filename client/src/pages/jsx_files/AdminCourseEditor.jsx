@@ -2,211 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import ConfirmInline from "../../components/ConfirmInline";
-import FieldError from "../../components/FieldError";
+import CourseDangerZone from "../../components/admin/CourseDangerZone";
+import CourseDetailsSection from "../../components/admin/CourseDetailsSection";
+import ModuleCard from "../../components/admin/ModuleCard";
 import ErrorState from "../../components/ErrorState";
 import { apiRequest } from "../../services/apiRequest";
-import { linkTypeOf } from "../../lib/linkType";
+import { blankForm, blankModule, fromServer, moveItem, statusOf, toPayload, validate } from "../../lib/courseForm";
 import { useFlip } from "../../hooks/useFlip";
 import { hasErrors, validateHttpLink, validateLength } from "../../lib/validators";
 import { useToast } from "../../context/useToast";
 import "../css_files/Admin.css";
-
-let keyCounter = 0;
-const nextKey = () => `k${(keyCounter += 1)}`;
-
-const blankLesson = () => ({
-  key: nextKey(),
-  title: "",
-  description: "",
-  content: "",
-  duration: "",
-});
-
-const blankModule = () => ({
-  key: nextKey(),
-  title: "",
-  description: "",
-  lessons: [blankLesson()],
-});
-
-const blankForm = () => ({
-  title: "",
-  description: "",
-  category: "",
-  level: "beginner",
-  thumbnail: "",
-  tags: "",
-  published: false,
-  modules: [],
-});
-
-const byOrder = (a, b) => (a.order || 0) - (b.order || 0);
-
-function fromServer(course) {
-  return {
-    title: course.title,
-    description: course.description,
-    category: course.category,
-    level: course.level,
-    thumbnail: course.thumbnail || "",
-    tags: (course.tags || []).join(", "),
-    published: Boolean(course.published),
-    modules: [...(course.modules || [])].sort(byOrder).map((module) => ({
-      key: nextKey(),
-      _id: module._id,
-      title: module.title,
-      description: module.description || "",
-      lessons: [...(module.lessons || [])].sort(byOrder).map((lesson) => ({
-        key: nextKey(),
-        _id: lesson._id,
-        title: lesson.title,
-        description: lesson.description || "",
-        content: lesson.content,
-        duration: lesson.duration ? String(lesson.duration) : "",
-      })),
-    })),
-  };
-}
-
-function toPayload(form) {
-  const tags = [
-    ...new Set(
-      form.tags
-        .split(",")
-        .map((tag) => tag.trim().toLowerCase())
-        .filter(Boolean),
-    ),
-  ];
-
-  return {
-    title: form.title.trim(),
-    description: form.description.trim(),
-    category: form.category.trim(),
-    level: form.level,
-    thumbnail: form.thumbnail.trim() || null,
-    tags,
-    published: form.published,
-    // Existing _ids are sent back so students' progress stays attached to their lessons.
-    modules: form.modules.map((module, moduleIndex) => ({
-      ...(module._id ? { _id: module._id } : {}),
-      title: module.title.trim(),
-      description: module.description.trim(),
-      order: moduleIndex + 1,
-      lessons: module.lessons.map((lesson, lessonIndex) => ({
-        ...(lesson._id ? { _id: lesson._id } : {}),
-        title: lesson.title.trim(),
-        description: lesson.description.trim(),
-        content: lesson.content.trim(),
-        duration: Math.max(0, parseInt(lesson.duration, 10) || 0),
-        order: lessonIndex + 1,
-      })),
-    })),
-  };
-}
-
-// Returns the first problem found, or "" when the form can be saved.
-function validate(form) {
-  if (form.title.trim().length < 3) return "The title needs at least 3 characters.";
-  if (form.description.trim().length < 10) return "The description needs at least 10 characters.";
-  if (form.category.trim().length < 2) return "Please add a category.";
-  if (form.thumbnail.trim() && !linkTypeOf(form.thumbnail.trim())) {
-    return "The thumbnail must be a link starting with http:// or https://.";
-  }
-
-  for (const [moduleIndex, module] of form.modules.entries()) {
-    if (!module.title.trim()) return `Module ${moduleIndex + 1} needs a title.`;
-
-    for (const [lessonIndex, lesson] of module.lessons.entries()) {
-      const where = `Module ${moduleIndex + 1}, lesson ${lessonIndex + 1}`;
-      if (!lesson.title.trim()) return `${where} needs a title.`;
-      if (!linkTypeOf(lesson.content.trim())) {
-        return `${where} needs a link starting with http:// or https://.`;
-      }
-    }
-  }
-
-  return "";
-}
-
-const statusOf = (course) => {
-  if (course.deletedAt) return "archived";
-  return course.published ? "published" : "draft";
-};
-
-function moveItem(list, index, direction) {
-  const target = index + direction;
-  if (target < 0 || target >= list.length) return list;
-
-  const copy = [...list];
-  [copy[index], copy[target]] = [copy[target], copy[index]];
-  return copy;
-}
-
-function LessonRow({ lesson, index, count, disabled, onChange, onMove, onRemove }) {
-  const type = lesson.content.trim() ? linkTypeOf(lesson.content.trim()) : null;
-
-  return (
-    <li className="editor-lesson" data-flip={lesson.key} data-flip-level="lesson">
-      <div className="editor-lesson-head">
-        <span className="editor-number">{index + 1}</span>
-
-        <input
-          aria-label={`Lesson ${index + 1} title`}
-          placeholder="Lesson title"
-          value={lesson.title}
-          maxLength={150}
-          onChange={(event) => onChange({ title: event.target.value })}
-        />
-
-        <div className="editor-order">
-          <button type="button" aria-label="Move lesson up" disabled={disabled || index === 0} onClick={() => onMove(-1)}>
-            ↑
-          </button>
-          <button type="button" aria-label="Move lesson down" disabled={disabled || index === count - 1} onClick={() => onMove(1)}>
-            ↓
-          </button>
-          <button type="button" aria-label="Remove lesson" disabled={disabled} onClick={onRemove}>
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <div className="editor-lesson-link">
-        <input
-          aria-label={`Lesson ${index + 1} link`}
-          placeholder="https:// link to the video, doc or article"
-          value={lesson.content}
-          maxLength={2000}
-          onChange={(event) => onChange({ content: event.target.value })}
-        />
-
-        {lesson.content.trim() && (
-          <span className={`admin-badge ${type ? "is-draft" : "is-archived"}`}>
-            {type || "Invalid link"}
-          </span>
-        )}
-
-        <input
-          type="number"
-          min="0"
-          className="editor-duration"
-          aria-label={`Lesson ${index + 1} duration in minutes`}
-          placeholder="min"
-          value={lesson.duration}
-          onChange={(event) => onChange({ duration: event.target.value })}
-        />
-      </div>
-
-      <input
-        aria-label={`Lesson ${index + 1} short description`}
-        placeholder="Short description (optional)"
-        value={lesson.description}
-        maxLength={500}
-        onChange={(event) => onChange({ description: event.target.value })}
-      />
-    </li>
-  );
-}
 
 function CourseEditor({ id }) {
   const isNew = !id;
@@ -467,85 +272,7 @@ function CourseEditor({ id }) {
 
       <form onSubmit={handleSave} className="editor-form" noValidate ref={editorRef}>
         <fieldset disabled={isArchived || saving} className="editor-fieldset">
-          <section className="admin-card editor-section">
-            <h2>Details</h2>
-
-            <label>
-              Title
-              <input
-                value={form.title}
-                maxLength={150}
-                aria-invalid={fieldErrors.title ? "true" : undefined}
-                onChange={(event) => setField({ title: event.target.value })}
-              />
-              <FieldError message={fieldErrors.title} />
-            </label>
-
-            <label>
-              Description
-              <textarea
-                rows={4}
-                value={form.description}
-                maxLength={2000}
-                aria-invalid={fieldErrors.description ? "true" : undefined}
-                onChange={(event) => setField({ description: event.target.value })}
-              />
-              <FieldError message={fieldErrors.description} />
-            </label>
-
-            <div className="editor-grid">
-              <label>
-                Category
-                <input
-                  value={form.category}
-                  maxLength={100}
-                  aria-invalid={fieldErrors.category ? "true" : undefined}
-                  onChange={(event) => setField({ category: event.target.value })}
-                />
-                <FieldError message={fieldErrors.category} />
-              </label>
-
-              <label>
-                Level
-                <select value={form.level} onChange={(event) => setField({ level: event.target.value })}>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </label>
-            </div>
-
-            <label>
-              <span>
-                Tags <span className="admin-muted">(comma separated, up to 20)</span>
-              </span>
-              <input value={form.tags} onChange={(event) => setField({ tags: event.target.value })} />
-            </label>
-
-            <label>
-              <span>
-                Thumbnail link <span className="admin-muted">(optional)</span>
-              </span>
-              <input
-                placeholder="https://"
-                value={form.thumbnail}
-                aria-invalid={fieldErrors.thumbnail ? "true" : undefined}
-                onChange={(event) => setField({ thumbnail: event.target.value })}
-              />
-              <FieldError message={fieldErrors.thumbnail} />
-            </label>
-
-            <label className="editor-check">
-              <input
-                type="checkbox"
-                checked={form.published}
-                onChange={(event) => setField({ published: event.target.checked })}
-              />
-              <span>
-                Published <span className="admin-muted">(visible in the catalog)</span>
-              </span>
-            </label>
-          </section>
+          <CourseDetailsSection form={form} fieldErrors={fieldErrors} setField={setField} />
 
           <section className="admin-card editor-section">
             <div className="editor-section-head">
@@ -573,122 +300,24 @@ function CourseEditor({ id }) {
             )}
 
             <ol className="editor-modules">
-              {form.modules.map((module, moduleIndex) => {
-                const isFolded = collapsed.includes(module.key);
-
-                return (
-                  <li
-                    key={module.key}
-                    className={`editor-module${isFolded ? " is-folded" : ""}`}
-                    data-flip={module.key}
-                    data-flip-level="module"
-                  >
-                    <div className="editor-module-head">
-                      <button
-                        type="button"
-                        className="editor-fold"
-                        aria-expanded={!isFolded}
-                        aria-label={`${isFolded ? "Expand" : "Collapse"} module ${moduleIndex + 1}`}
-                        onClick={() => toggleCollapsed(module.key)}
-                      >
-                        <span aria-hidden="true" />
-                      </button>
-
-                      <span className="editor-number">{moduleIndex + 1}</span>
-
-                      <input
-                        aria-label={`Module ${moduleIndex + 1} title`}
-                        placeholder="Module title"
-                        value={module.title}
-                        maxLength={150}
-                        onChange={(event) => updateModule(moduleIndex, { title: event.target.value })}
-                      />
-
-                      {isFolded && (
-                        <span className="editor-fold-count">
-                          {module.lessons.length} lesson{module.lessons.length === 1 ? "" : "s"}
-                        </span>
-                      )}
-
-                      <div className="editor-order">
-                        <button
-                          type="button"
-                          aria-label="Move module up"
-                          disabled={moduleIndex === 0}
-                          onClick={() => {
-                            captureOrder("module");
-                            setModules((modules) => moveItem(modules, moduleIndex, -1));
-                          }}
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Move module down"
-                          disabled={moduleIndex === form.modules.length - 1}
-                          onClick={() => {
-                            captureOrder("module");
-                            setModules((modules) => moveItem(modules, moduleIndex, 1));
-                          }}
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Remove module"
-                          onClick={() => setModules((modules) => modules.filter((_, i) => i !== moduleIndex))}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="editor-module-body" inert={isFolded}>
-                      <div className="editor-module-inner">
-                        <input
-                          aria-label={`Module ${moduleIndex + 1} description`}
-                          placeholder="Short description (optional)"
-                          value={module.description}
-                          maxLength={500}
-                          onChange={(event) => updateModule(moduleIndex, { description: event.target.value })}
-                        />
-
-                        <ol className="editor-lessons">
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <LessonRow
-                              key={lesson.key}
-                              lesson={lesson}
-                              index={lessonIndex}
-                              count={module.lessons.length}
-                              disabled={false}
-                              onChange={(patch) =>
-                                updateLessons(moduleIndex, (lessons) =>
-                                  lessons.map((item, i) => (i === lessonIndex ? { ...item, ...patch } : item)),
-                                )
-                              }
-                              onMove={(direction) => {
-                                captureOrder("lesson");
-                                updateLessons(moduleIndex, (lessons) => moveItem(lessons, lessonIndex, direction));
-                              }}
-                              onRemove={() =>
-                                updateLessons(moduleIndex, (lessons) => lessons.filter((_, i) => i !== lessonIndex))
-                              }
-                            />
-                          ))}
-                        </ol>
-
-                        <button
-                          type="button"
-                          className="admin-quiet"
-                          onClick={() => updateLessons(moduleIndex, (lessons) => [...lessons, blankLesson()])}
-                        >
-                          + Add lesson
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+              {form.modules.map((module, moduleIndex) => (
+                <ModuleCard
+                  key={module.key}
+                  module={module}
+                  index={moduleIndex}
+                  count={form.modules.length}
+                  isFolded={collapsed.includes(module.key)}
+                  captureOrder={captureOrder}
+                  onToggleFold={() => toggleCollapsed(module.key)}
+                  onChange={(patch) => updateModule(moduleIndex, patch)}
+                  onMove={(direction) => {
+                    captureOrder("module");
+                    setModules((modules) => moveItem(modules, moduleIndex, direction));
+                  }}
+                  onRemove={() => setModules((modules) => modules.filter((_, i) => i !== moduleIndex))}
+                  onLessonsChange={(update) => updateLessons(moduleIndex, update)}
+                />
+              ))}
             </ol>
 
             <button type="button" className="admin-quiet" onClick={() => setModules((modules) => [...modules, blankModule()])}>
@@ -738,67 +367,17 @@ function CourseEditor({ id }) {
       </form>
 
       {!isNew && (
-        <section className="admin-card editor-section editor-danger" aria-label="Archive and delete">
-          <h2>Archive and delete</h2>
-
-          {!isArchived ? (
-            <>
-              <p className="admin-muted">
-                Archiving removes the course from the catalog. Enrolled learners keep their progress.
-              </p>
-
-              {confirm === "archive" ? (
-                <ConfirmInline
-                  message={
-                    meta.enrollments > 0
-                      ? `${meta.enrollments} learner(s) are enrolled. They keep their progress, but the course leaves the catalog. Archive it?`
-                      : "Archive this course? It will leave the catalog."
-                  }
-                  confirmLabel="Archive course"
-                  keepLabel="Cancel"
-                  onCancel={() => setConfirm("")}
-                  onConfirm={handleArchive}
-                />
-              ) : (
-                <div>
-                  <button type="button" className="admin-danger" onClick={() => setConfirm("archive")}>
-                    Archive course
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <div>
-                <button type="button" className="admin-quiet" onClick={handleRestore}>
-                  Restore as draft
-                </button>
-              </div>
-
-              <p className="admin-muted">
-                Deleting permanently cannot be undone and is only possible when nobody is enrolled. Type the
-                course title to confirm.
-              </p>
-
-              <div className="editor-purge">
-                <input
-                  aria-label="Type the course title to confirm"
-                  placeholder={meta.title}
-                  value={purgeTitle}
-                  onChange={(event) => setPurgeTitle(event.target.value)}
-                />
-                <button
-                  type="button"
-                  className="admin-danger"
-                  disabled={purgeTitle.trim() !== meta.title}
-                  onClick={handlePurge}
-                >
-                  Delete permanently
-                </button>
-              </div>
-            </>
-          )}
-        </section>
+        <CourseDangerZone
+          isArchived={isArchived}
+          meta={meta}
+          confirm={confirm}
+          setConfirm={setConfirm}
+          purgeTitle={purgeTitle}
+          setPurgeTitle={setPurgeTitle}
+          onArchive={handleArchive}
+          onRestore={handleRestore}
+          onPurge={handlePurge}
+        />
       )}
     </main>
   );
