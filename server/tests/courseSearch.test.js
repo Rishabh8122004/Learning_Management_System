@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { stub, load, fakeRes } = require('./helpers');
 
 let filterUsed = null;
+let distinctCall = null;
 
 stub('models/Course', {
   find: (filter) => {
@@ -11,9 +12,13 @@ stub('models/Course', {
     return query;
   },
   countDocuments: async () => 0,
+  distinct: async (field, filter) => {
+    distinctCall = { field, filter };
+    return ['Web Development', 'databases', 'Databases', ' Tools ', ''];
+  },
 });
 
-const { listCourses } = load('controllers/courseController');
+const { listCourses, listCategories } = load('controllers/courseController');
 
 const search = async (query) => {
   const res = fakeRes();
@@ -55,5 +60,16 @@ describe('public course search', () => {
     assert.equal(filterUsed.$and, undefined);
     assert.equal(filterUsed.published, true);
     assert.equal(filterUsed.deletedAt, null);
+  });
+});
+
+describe('course categories for the filter', () => {
+  test('lists each category of published courses once, sorted, ignoring capital letters', async () => {
+    const res = fakeRes();
+    await listCategories({}, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(distinctCall, { field: 'category', filter: { published: true, deletedAt: null } });
+    assert.deepEqual(res.body.categories, ['databases', 'Tools', 'Web Development']);
   });
 });

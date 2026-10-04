@@ -181,6 +181,26 @@ const listCourses = async (req, res) => {
   }
 };
 
+// GET /api/courses/categories  (public)
+// The categories that actually exist on published courses, for the filter on the courses page. Different
+// capital letters count as one category (the filter itself ignores capitals).
+const listCategories = async (req, res) => {
+  try {
+    const names = await Course.distinct('category', { published: true, deletedAt: null });
+
+    const byLowerCase = new Map();
+    for (const name of names) {
+      const key = String(name).trim().toLowerCase();
+      if (key && !byLowerCase.has(key)) byLowerCase.set(key, String(name).trim());
+    }
+
+    const categories = [...byLowerCase.values()].sort((a, b) => a.localeCompare(b));
+    return res.status(200).json({ success: true, categories });
+  } catch (err) {
+    return handleError(res, err, 'List categories');
+  }
+};
+
 // GET /api/courses/:id  (public)
 const getCourse = async (req, res) => {
   try {
@@ -199,4 +219,4 @@ const getCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, updateCourse, deleteCourse, listCourses, getCourse };
+module.exports = { createCourse, updateCourse, deleteCourse, listCourses, listCategories, getCourse };
