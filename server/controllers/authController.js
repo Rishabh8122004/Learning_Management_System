@@ -47,11 +47,16 @@ const newEmailToken = () => {
 // not theirs and never confirmed it. After a day the real owner may use it; the unconfirmed account (which never
 // had a login) is replaced. Returns null when the address is free, otherwise { status, message }.
 const claimEmail = async (normalizedEmail) => {
-  const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt');
+  const existing = await User.findOne({ email: normalizedEmail }).select('emailVerified createdAt verifyEmailExpires');
   if (!existing) return null;
 
+  // "Stale" means its confirmation link has run out, which is also the moment the expiry index removes it.
+  // (A resend moves that moment forward, so a fresh resend protects the account for another day.)
   const unconfirmed = existing.emailVerified === false;
-  const stale = unconfirmed && Date.now() - new Date(existing.createdAt).getTime() > VERIFY_HOURS * 3600 * 1000;
+  const lapsedAt = existing.verifyEmailExpires
+    ? new Date(existing.verifyEmailExpires).getTime()
+    : new Date(existing.createdAt).getTime() + VERIFY_HOURS * 3600 * 1000;
+  const stale = unconfirmed && lapsedAt < Date.now();
 
   if (!stale) {
     return {
@@ -223,7 +228,7 @@ const forgotPassword = async (req, res) => {
           `Hi ${user.name},\n\nUse this link to choose a new password (valid for ${RESET_MINUTES} minutes):\n${link}\n\n` +
           'If you did not ask for this, you can ignore this email. Your password will not change.',
         html:
-          `<p>Hi ${user.name.replace(/[<>&"]/g, '')},</p>` +
+          `<p>Hi ${plainName(user.name)},</p>` +
           `<p>Use this link to choose a new password (valid for ${RESET_MINUTES} minutes):</p>` +
           `<p><a href="${link}">Reset my password</a></p>` +
           '<p>If you did not ask for this, you can ignore this email. Your password will not change.</p>',

@@ -143,6 +143,10 @@ function normalizeTarget(value) {
   };
 }
 
+// The saved habit/target of a goal arrives as a Mongoose sub-document; its own keys are internal ones, so it is
+// turned into a plain object before it is checked like a request would be.
+const plain = (value) => (value && typeof value.toObject === "function" ? value.toObject() : value);
+
 function normalizeGoalFields(body, existing = null) {
   if (!isPlainObject(body)) {
     throw new InputError("Request body must be a JSON object");
@@ -211,12 +215,12 @@ function normalizeGoalFields(body, existing = null) {
 
   if (trackingType === "habit") {
     const habitValue =
-      body.habit !== undefined ? body.habit : existing?.habit;
+      body.habit !== undefined ? body.habit : plain(existing?.habit);
     fields.habit = normalizeHabit(habitValue);
     unset.target = 1;
   } else if (trackingType === "target") {
     const targetValue =
-      body.target !== undefined ? body.target : existing?.target;
+      body.target !== undefined ? body.target : plain(existing?.target);
     fields.target = normalizeTarget(targetValue);
     unset.habit = 1;
   } else {

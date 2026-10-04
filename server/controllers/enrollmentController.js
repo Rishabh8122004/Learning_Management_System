@@ -179,7 +179,7 @@ const completeLesson = async (req, res) => {
 
     const { percentage, isComplete } = computeProgress(updatedCompletedLessons, courseLessonIds);
 
-    const updated = await Enrollment.findOneAndUpdate(
+    await Enrollment.findOneAndUpdate(
       {
         _id: id,
         user: req.user.id,
