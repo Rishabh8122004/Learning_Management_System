@@ -246,6 +246,7 @@
 
 .admin-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   margin: 0;
   padding: 0;
@@ -977,4 +978,26 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+/* Long names and emails wrap instead of stretching the page (matters on phones) */
+.admin-row-main,
+.admin-user-name,
+.admin-remove-panel {
+  overflow-wrap: anywhere;
+}
+
+.admin-remove-panel {
+  min-width: 0;
+}
+
+.admin-remove-panel input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font: inherit;
 }

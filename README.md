@@ -42,7 +42,7 @@ Trackly is **not** a marketplace, video platform, social network or payment plat
 .
 ├── client/                 React app (Vite)
 │   ├── src/
-│   │   ├── components/     layout, auth, goals and shared components
+│   │   ├── components/     layout, auth, goals, admin (course editor parts) and shared components
 │   │   ├── pages/          jsx_files/ (pages) and css_files/ (page styles)
 │   │   ├── context/        auth and toast providers
 │   │   ├── lib/            API helper, hooks, pure helpers (goal progress, dates)
