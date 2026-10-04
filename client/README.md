@@ -19,9 +19,11 @@ Optional `.env` (copy `.env.example`): `VITE_API_URL` is the API base URL includ
 | Folder | Purpose |
 |---|---|
 | `src/pages/jsx_files`, `src/pages/css_files` | one file per screen and its styles |
-| `src/components` | `layout/` (navbar, footer, route guards), `auth/`, `goals/`, shared pieces such as `ConfirmInline` |
+| `src/components` | `layout/` (navbar, footer, route guards), `auth/`, `goals/`, `admin/` (parts of the course editor), shared pieces such as `ConfirmInline` |
 | `src/context` | `AuthContext` (session) and the toast provider |
-| `src/lib` | `apiRequest`, hooks (`useGoals`, `useCountUp`, `useReveal`, `useFlip`, `useMediaQuery`) and pure helpers |
+| `src/services` | `apiRequest`, the one function that talks to the API |
+| `src/hooks` | `useGoals`, `useCountUp`, `useReveal`, `useFlip`, `useMediaQuery`, `useAutoFocus` |
+| `src/lib` | pure helpers: goal progress and celebrations, course form, validators, dates, page titles |
 | `src/index.css`, `src/polish.css` | design tokens (colours, spacing, motion) and shared polish |
 
 ## Conventions

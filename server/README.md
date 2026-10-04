@@ -22,6 +22,9 @@ Health check: `GET /api/health`.
 | `JWT_SECRET` | yes | secret for signing tokens |
 | `PORT` | no | default 5000 |
 | `CLIENT_ORIGIN` | no | allowed CORS origin(s), comma separated, default `http://localhost:5173` |
+| `BREVO_API_KEY` | for email | Brevo API key used to send confirmation and reset emails (a secret: set it only on the host) |
+| `MAIL_FROM` | for email | sender address verified in Brevo |
+| `APP_URL` | no | website address used in email links (defaults to the first `CLIENT_ORIGIN`) |
 
 ## Structure
 
@@ -32,8 +35,8 @@ Health check: `GET /api/health`.
 | `controllers/` | request handling and validation |
 | `middleware/` | `authMiddleware` (token + database check), `adminMiddleware` |
 | `models/` | `User`, `Course` (modules, lessons), `Enrollment`, `Goal`, `GoalEntry` |
-| `utils/` | progress calculation, safe user shape, daily message |
-| `scripts/` | `setRole.js <email> <role>` (make someone admin), `dbStats.js` (read-only storage report) |
+| `utils/` | progress calculation, safe user shape, daily message, `mailer` (Brevo), `removeUser` (delete a person and their data), `validate` (id check, regex escape) |
+| `scripts/` | `setRole.js <email> <role>` (make someone admin), `dbStats.js` and `dataCheck.js` (read-only reports), `seedShowcaseCourses.js` (starter courses, dry run by default) |
 | `tests/` | route and logic tests with stubbed models |
 
 ## If the database does not connect
@@ -46,4 +49,5 @@ The usual cause is that your current internet address is not in **MongoDB Atlas 
 - Private data is always scoped to `req.user.id`; admin routes use `adminMiddleware`.
 - Lessons are links only. No files or media are stored in the database.
 - Errors use the shape `{ success: false, message }` with correct status codes.
-- Before deploying: set `CLIENT_ORIGIN` to the live frontend URL and enable `trust proxy` if the host sits behind a proxy.
+- Before deploying: set `CLIENT_ORIGIN` to the live frontend URL. The app already trusts one proxy hop (`trust proxy`) so rate limits count each visitor behind a host such as Render.
+- Rate limits: 1000 requests per 15 minutes per visitor for the whole API, and stricter limits on sign-in, password and email routes.
