@@ -1,4 +1,6 @@
 .auth-page {
+  /* The glow behind the card reaches past the screen edge on phones; clip it so the page never scrolls sideways */
+  overflow-x: clip;
   display: grid;
   min-height: 70vh;
   place-items: center;
