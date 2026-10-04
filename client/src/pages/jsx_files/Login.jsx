@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import ConfirmInline from "../../components/ConfirmInline";
 import FieldError from "../../components/FieldError";
 import PasswordField from "../../components/auth/PasswordField";
 import { useAuth } from "../../context/useAuth";
@@ -40,6 +41,10 @@ function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [resendState, setResendState] = useState("idle");
+  const [stuckMode, setStuckMode] = useState(null); // null | "change" | "delete"
+  const [newEmail, setNewEmail] = useState("");
+  const [newEmailError, setNewEmailError] = useState("");
+  const [stuckBusy, setStuckBusy] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -104,6 +109,56 @@ function Login() {
     }
   }
 
+  function closeNotice() {
+    setNeedsConfirmation(false);
+    setStuckMode(null);
+    setNewEmail("");
+    setNewEmailError("");
+  }
+
+  // For someone who registered with a wrong or fake address: the password proves the account is theirs.
+  async function changeEmail(event) {
+    event.preventDefault();
+
+    const problem = validateEmail(newEmail);
+    setNewEmailError(problem);
+    if (problem) return;
+
+    setStuckBusy(true);
+
+    try {
+      const data = await apiRequest("/auth/unconfirmed/change-email", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email.trim(), password: formData.password, newEmail: newEmail.trim() }),
+      });
+      toast.success(data.message || "Email changed.");
+      setFormData((current) => ({ ...current, email: data.email || newEmail.trim() }));
+      closeNotice();
+    } catch (changeError) {
+      toast.error(changeError.message || "Could not change the email.");
+    } finally {
+      setStuckBusy(false);
+    }
+  }
+
+  async function deleteStuckAccount() {
+    setStuckBusy(true);
+
+    try {
+      const data = await apiRequest("/auth/unconfirmed/delete", {
+        method: "POST",
+        body: JSON.stringify({ email: formData.email.trim(), password: formData.password }),
+      });
+      toast.success(data.message || "Account deleted.");
+      setFormData({ email: "", password: "" });
+      closeNotice();
+    } catch (deleteError) {
+      toast.error(deleteError.message || "Could not delete the account.");
+    } finally {
+      setStuckBusy(false);
+    }
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-card">
@@ -162,6 +217,63 @@ function Login() {
                 >
                   {resendState === "sending" ? "Sending..." : "Resend confirmation email"}
                 </button>
+              )}
+
+              <p className="auth-notice-hint">
+                Used a wrong or fake email? Then the link can never arrive and the account cannot be recovered by email.
+                Change the email, or delete this account and register again.
+              </p>
+
+              {stuckMode === null && (
+                <div className="auth-notice-actions">
+                  <button type="button" className="link-button" onClick={() => setStuckMode("change")}>
+                    Change my email
+                  </button>
+                  <button type="button" className="link-button" onClick={() => setStuckMode("delete")}>
+                    Delete this account
+                  </button>
+                </div>
+              )}
+
+              {stuckMode === "change" && (
+                <div className="auth-notice-form">
+                  <label htmlFor="new-email">New email</label>
+                  <input
+                    id="new-email"
+                    type="email"
+                    value={newEmail}
+                    onChange={(event) => {
+                      setNewEmail(event.target.value);
+                      if (newEmailError) setNewEmailError("");
+                    }}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    aria-invalid={newEmailError ? "true" : undefined}
+                    aria-describedby={newEmailError ? "new-email-error" : undefined}
+                    disabled={stuckBusy}
+                  />
+                  <FieldError id="new-email-error" message={newEmailError} />
+                  <div>
+                    <button type="button" className="link-button" onClick={() => setStuckMode(null)} disabled={stuckBusy}>
+                      Cancel
+                    </button>
+                    <button type="button" className="auth-notice-go" onClick={changeEmail} disabled={stuckBusy}>
+                      {stuckBusy ? "Saving..." : "Change email and send link"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {stuckMode === "delete" && (
+                <ConfirmInline
+                  message="Delete this account? It has no data yet. You can register again with a real email."
+                  confirmLabel="Delete account"
+                  keepLabel="Keep it"
+                  busyLabel="Deleting…"
+                  busy={stuckBusy}
+                  onConfirm={deleteStuckAccount}
+                  onCancel={() => setStuckMode(null)}
+                />
               )}
             </div>
           )}
