@@ -12,6 +12,8 @@ import Courses from "./pages/jsx_files/Courses";
 import CourseDetail from "./pages/jsx_files/CourseDetail";
 import Login from "./pages/jsx_files/Login";
 import Register from "./pages/jsx_files/Register";
+import ForgotPassword from "./pages/jsx_files/ForgotPassword";
+import ResetPassword from "./pages/jsx_files/ResetPassword";
 import Dashboard from "./pages/jsx_files/Dashboard";
 import MyCourses from "./pages/jsx_files/MyCourses";
 import TrackYourGoals from "./pages/jsx_files/TrackYourGoals";
@@ -117,6 +119,8 @@ function App() {
             <Route path="/courses/:id" element={<CourseDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />

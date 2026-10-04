@@ -122,6 +122,10 @@ function Login() {
             disabled={isSubmitting}
           />
 
+          <p className="auth-forgot">
+            <Link to="/forgot-password">Forgot your password?</Link>
+          </p>
+
           <button type="submit" className="auth-submit" disabled={isSubmitting}>
             {isSubmitting && <span className="spinner" aria-hidden="true" />}
             {isSubmitting ? "Logging in..." : "Log in"}

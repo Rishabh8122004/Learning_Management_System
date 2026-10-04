@@ -32,6 +32,9 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Password reset: only a hash of the emailed token is stored, and it expires. Both are cleared once used.
+    resetPasswordHash: { type: String, default: null, select: false },
+    resetPasswordExpires: { type: Date, default: null, select: false },
     // Bump to invalidate every token issued before (password/role change, deletion).
     tokenVersion: {
       type: Number,

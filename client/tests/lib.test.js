@@ -411,3 +411,10 @@ describe("page titles", () => {
     assert.equal(titleFor("/nope"), "Page not found · Trackly");
   });
 });
+
+describe("password recovery pages", () => {
+  test("have their own titles", () => {
+    assert.equal(titleFor("/forgot-password"), "Forgot password · Trackly");
+    assert.equal(titleFor("/reset-password"), "Reset password · Trackly");
+  });
+});
