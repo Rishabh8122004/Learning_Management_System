@@ -5,9 +5,9 @@ const User = require('../models/User');
 const safeUser = require('../utils/safeUser');
 const { sendMail } = require('../utils/mailer');
 const { removeUserAndData } = require('../utils/removeUser');
+const { isEmail } = require('../utils/validate');
 
 const SALT_ROUNDS = 10;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Used so login takes similar time whether or not the email exists.
 const DUMMY_HASH = bcrypt.hashSync('dummy-password', SALT_ROUNDS);
 
@@ -116,7 +116,7 @@ const register = async (req, res) => {
     if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
       return fail(res, 400, 'Name must be between 2 and 100 characters');
     }
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
     // bcrypt only uses the first 72 bytes, so cap the length.
@@ -200,7 +200,7 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body || {};
 
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
 
@@ -319,7 +319,7 @@ const resendVerification = async (req, res) => {
   try {
     const { email } = req.body || {};
 
-    if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!isEmail(email)) {
       return fail(res, 400, 'A valid email is required');
     }
 
@@ -351,7 +351,7 @@ const changeUnconfirmedEmail = async (req, res) => {
     const found = await unconfirmedAccount(email, password);
     if (!found.user) return fail(res, found.status, found.message);
 
-    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+    if (!isEmail(newEmail)) {
       return fail(res, 400, 'A valid new email is required');
     }
     const normalized = newEmail.trim().toLowerCase();
@@ -417,7 +417,7 @@ const requestEmailChange = async (req, res) => {
     if (keys.some((key) => !['newEmail', 'password'].includes(key))) {
       return fail(res, 400, 'Provide newEmail and password');
     }
-    if (typeof newEmail !== 'string' || !EMAIL_REGEX.test(newEmail.trim())) {
+    if (!isEmail(newEmail)) {
       return fail(res, 400, 'A valid new email is required');
     }
 

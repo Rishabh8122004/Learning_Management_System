@@ -402,6 +402,15 @@ describe("form validators", () => {
 
 import { titleFor } from "../src/lib/pageTitle.js";
 
+describe("email check", () => {
+  test("accepts normal emails and refuses missing, malformed or over-long ones", () => {
+    assert.equal(validateEmail("asha@example.com"), "");
+    assert.match(validateEmail(""), /Enter your email/);
+    assert.match(validateEmail("asha@"), /valid email/);
+    assert.match(validateEmail(`${"a".repeat(250)}@example.com`), /too long/);
+  });
+});
+
 describe("recent activity links", () => {
   test("an enrollment in a course that is gone points to My Courses, not to a missing page", () => {
     const base = { enrolledAt: "2026-10-01T10:00:00.000Z", course: { _id: "c1", title: "React" } };
