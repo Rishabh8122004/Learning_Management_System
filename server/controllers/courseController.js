@@ -1,7 +1,7 @@
 const Course = require('../models/Course');
 const { recomputeEnrollmentProgress } = require('../utils/progress');
+const { isValidId, escapeRegex } = require('../utils/validate');
 
-const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const LEVELS = ['beginner', 'intermediate', 'advanced'];
 const ALLOWED_FIELDS = [
   'title',
@@ -17,8 +17,6 @@ const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 
 const fail = (res, status, message) => res.status(status).json({ success: false, message });
-const isValidId = (id) => typeof id === 'string' && OBJECT_ID_REGEX.test(id);
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Maps Mongoose validation/cast errors to 400, everything else to 500.
 const handleError = (res, err, label) => {

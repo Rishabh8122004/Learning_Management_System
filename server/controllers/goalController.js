@@ -1,7 +1,7 @@
 const Goal = require("../models/Goal");
 const GoalEntry = require("../models/GoalEntry");
+const { isValidId } = require("../utils/validate");
 
-const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const TRACKING_TYPES = ["milestones", "habit", "target"];
 const STATUSES = ["active", "paused", "completed"];
 
@@ -13,9 +13,6 @@ const fail = (res, status, message) =>
 
 const isPlainObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
-
-const isValidId = (value) =>
-  typeof value === "string" && OBJECT_ID_REGEX.test(value);
 
 const rejectUnknownKeys = (body, allowed) => {
   const unknown = Object.keys(body).filter((key) => !allowed.includes(key));

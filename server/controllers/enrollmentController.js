@@ -1,11 +1,9 @@
 const Enrollment = require('../models/Enrollment');
 const Course = require('../models/Course');
 const { computeProgress } = require('../utils/progress');
-
-const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+const { isValidId } = require('../utils/validate');
 
 const fail = (res, status, message) => res.status(status).json({ success: false, message });
-const isValidId = (id) => typeof id === 'string' && OBJECT_ID_REGEX.test(id);
 
 const handleError = (res, err, label) => {
   if (err && (err.name === 'ValidationError' || err.name === 'CastError')) {
