@@ -1,0 +1,558 @@
+/* Calm, minimal finish applied on top of the page styles:
+   soft cards, gentle motion, comfortable touch targets.
+   Loaded last (see App.jsx) so it refines every page the same way. */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- Pages ease in ---------------------------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* "backwards" (not "both") so hover transforms still work afterwards. */
+.app-content > * {
+  animation: rise-in 0.6s var(--ease) backwards;
+}
+
+.home-hero-copy > * {
+  animation: rise-in 0.7s var(--ease) backwards;
+}
+
+.home-hero-copy > :nth-child(2) { animation-delay: 80ms; }
+.home-hero-copy > :nth-child(3) { animation-delay: 160ms; }
+.home-hero-copy > :nth-child(4) { animation-delay: 240ms; }
+.home-hero-copy > :nth-child(5) { animation-delay: 320ms; }
+
+/* Scroll reveal (see lib/useReveal.js): only elements the hook hides are ever invisible */
+[data-reveal] {
+  transition:
+    opacity 700ms var(--ease),
+    transform 700ms var(--ease);
+  transition-delay: calc(var(--i, 0) * 120ms);
+}
+
+[data-reveal="hidden"] {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.learning-step[data-reveal="shown"] .learning-step-marker {
+  animation: marker-pop 600ms var(--ease-spring) backwards;
+  animation-delay: calc(var(--i, 0) * 120ms + 150ms);
+}
+
+@keyframes marker-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.courses-grid > *,
+.my-courses-grid > *,
+.dashboard-stats > *,
+.dashboard-course-list > * {
+  animation: rise-in 0.55s var(--ease) backwards;
+}
+
+.courses-grid > :nth-child(2),
+.my-courses-grid > :nth-child(2),
+.dashboard-stats > :nth-child(2),
+.dashboard-course-list > :nth-child(2) { animation-delay: 60ms; }
+
+.courses-grid > :nth-child(3),
+.my-courses-grid > :nth-child(3),
+.dashboard-stats > :nth-child(3),
+.dashboard-course-list > :nth-child(3) { animation-delay: 120ms; }
+
+.courses-grid > :nth-child(4),
+.my-courses-grid > :nth-child(4),
+.dashboard-stats > :nth-child(4) { animation-delay: 180ms; }
+
+.courses-grid > :nth-child(n + 5),
+.my-courses-grid > :nth-child(n + 5) { animation-delay: 240ms; }
+
+/* ---- Soft cards ------------------------------------------------------- */
+
+.courses-filters,
+.course-card,
+.dashboard-stat,
+.dashboard-course,
+.dashboard-goal-summary,
+.course-detail-header,
+.course-progress-card,
+.course-module,
+.my-courses-empty,
+.auth-card,
+.profile-card {
+  border-color: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.course-card,
+.profile-card,
+.auth-card {
+  transition:
+    transform 0.4s var(--ease),
+    box-shadow 0.4s var(--ease),
+    border-color 0.25s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---- Inputs and buttons ------------------------------------------------ */
+
+input,
+select,
+textarea {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+button,
+.primary-button,
+.nav-cta {
+  transition:
+    transform 0.2s var(--ease),
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+button:not(:disabled):active,
+.primary-button:active,
+.nav-cta:active {
+  transform: scale(0.97);
+}
+
+.primary-button:hover,
+.nav-cta:hover {
+  box-shadow: 0 6px 16px rgba(240, 130, 60, 0.28);
+}
+
+/* ---- Shared buttons and helpers (any page can use these) -------------- */
+
+.primary-button,
+.secondary-button {
+  display: inline-flex;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.primary-button {
+  border: 0;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.primary-button:hover {
+  background: var(--primary-hover);
+}
+
+.secondary-button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  transition:
+    border-color var(--dur-fast) ease,
+    background-color var(--dur-fast) ease;
+}
+
+.secondary-button:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.primary-button:focus-visible,
+.secondary-button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* A quiet in-sentence action, for example "Clear filters" */
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-dark);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link-button:hover {
+  text-decoration-thickness: 2px;
+}
+
+.link-button:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* Text for screen readers only */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Progress bars fill from the left when they first appear */
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* A small spinner for buttons that are working (the ring keeps turning, slowly, under reduced motion) */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* An inline "are you sure?" box (components/ConfirmInline.jsx) */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.confirm-inline {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--error) 35%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--error) 6%, transparent);
+  animation: panel-in 300ms var(--ease);
+}
+
+.confirm-inline p {
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.confirm-inline > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.confirm-inline button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: 650;
+}
+
+.confirm-inline .confirm-delete {
+  border-color: transparent;
+  background: var(--danger-solid);
+  color: var(--on-danger);
+}
+
+.confirm-inline button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.confirm-inline button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Page-sized placeholder while a session is restored */
+.page-loading {
+  width: min(var(--w-content), calc(100% - 32px));
+  margin: 0 auto;
+  padding: var(--space-8) 0;
+}
+
+.page-loading-title {
+  width: min(280px, 70%);
+  height: 38px;
+  margin-bottom: 18px;
+}
+
+.page-loading-line {
+  width: min(460px, 90%);
+  height: 14px;
+  margin-bottom: 36px;
+}
+
+.page-loading-block {
+  height: 180px;
+  border-radius: var(--radius);
+}
+
+/* Placeholder shapes shown while content loads: a soft light sweep, nothing flashy */
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+      100deg,
+      transparent 20%,
+      color-mix(in srgb, var(--surface) 70%, transparent) 50%,
+      transparent 80%
+    )
+    -100% 0 / 60% 100% no-repeat,
+    var(--surface-secondary);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  to {
+    background-position: 200% 0, 0 0;
+  }
+}
+
+/* ---- Headings: a little lighter, a little calmer ---------------------- */
+
+.home-hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.055em;
+}
+
+/* ---- Small screens ---------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .home-hero {
+    padding: 72px 0 72px;
+  }
+
+  .profile-card,
+  .auth-card {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  form button,
+  .primary-button,
+  .nav-cta {
+    min-height: 44px;
+  }
+}
+
+/* ---- Touch targets: at least 44px on phones and touch screens (without changing how things look on desktop) */
+
+@media (max-width: 640px), (pointer: coarse) {
+  .dashboard-section-link,
+  .course-detail-back,
+  .page a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .theme-toggle {
+    height: 44px;
+  }
+
+  .icon-button,
+  .menu-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .footer-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .confirm-inline button,
+  .courses-pagination button,
+  .my-courses-filters button,
+  .dashboard-course-link {
+    min-height: 44px;
+  }
+
+  /* Bigger hit area for an in-sentence button without moving the text around it */
+  .link-button,
+  .auth-footer a {
+    display: inline-block;
+    padding: 12px 6px;
+    margin: -12px -6px;
+  }
+
+  .course-resource-button,
+  .course-unenroll-button,
+  .course-lesson-button,
+  .admin-tabs button,
+  .admin-row-actions a,
+  .admin-row-actions button,
+  .text-button {
+    min-height: 44px;
+  }
+}
+
+/* ---- Respect people who prefer less motion ---------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .skeleton {
+    animation: none;
+  }
+
+  .bell-icon.is-ringing,
+  .bell-badge {
+    animation: none;
+  }
+
+  .spinner {
+    animation-duration: 2s !important;
+    animation-delay: 0ms !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Error state (components/ErrorState.jsx) -------------------------- */
+
+.error-state {
+  padding: var(--space-7) var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--error) 35%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--error) 4%, var(--surface));
+  text-align: center;
+}
+
+.error-state h2 {
+  margin: 0 0 8px;
+  color: var(--error-text);
+  font-size: var(--text-xl);
+}
+
+.error-state p {
+  max-width: 460px;
+  margin: 0 auto var(--space-5);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.dashboard-error-wrap,
+.course-error-back {
+  margin-bottom: var(--space-5);
+}
+
+.course-error-back {
+  margin-top: var(--space-4);
+  text-align: center;
+}
+
+/* ---- Field validation ------------------------------------------------- */
+
+.field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--error-text);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  animation: panel-in 220ms var(--ease);
+}
+
+.field-error::before {
+  content: "!";
+  display: grid;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--error-text) 16%, transparent);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: var(--error) !important;
+}
+
+input[aria-invalid="true"]:focus-visible,
+select[aria-invalid="true"]:focus-visible,
+textarea[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--error) 18%, transparent);
+}
+
+/* Elements that only receive focus from code (page headings after navigation) get no ring */
+[tabindex="-1"]:focus {
+  outline: none;
+}

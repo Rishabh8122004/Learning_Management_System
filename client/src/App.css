@@ -1,0 +1,906 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.navbar {
+  position: relative;
+
+  width: min(1200px, calc(100% - 32px));
+  min-height: var(--nav-height);
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+
+.brand-mark {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+
+  transition: transform 0.25s ease;
+}
+
+.brand:hover .brand-mark {
+  transform: rotate(45deg);
+}
+
+.nav-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links a {
+  position: relative;
+  z-index: 1;
+  padding: 8px 14px;
+  white-space: nowrap;
+  border-radius: 999px;
+
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 550;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.nav-links a:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+/* The sliding pill under the active link (moved by Navbar.jsx). Until it is placed, the active link keeps its own pill. */
+.nav-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-radius: var(--radius-pill);
+  background: var(--primary-light);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 450ms var(--ease),
+    width 450ms var(--ease),
+    opacity var(--dur) ease;
+}
+
+.nav-links.has-indicator .nav-indicator {
+  opacity: 1;
+}
+
+.nav-links.has-indicator a.is-active {
+  background: transparent;
+}
+
+.nav-links a.is-active,
+.mobile-menu a.is-active {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 650;
+}
+
+.nav-links a:focus-visible,
+.avatar-link:focus-visible,
+.nav-quiet:focus-visible,
+.nav-cta:focus-visible,
+.mobile-menu a:focus-visible,
+.mobile-menu button:focus-visible,
+.nav-actions button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Round icon buttons (notifications, mobile menu) */
+.icon-button,
+.menu-button {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.icon-button:hover,
+.menu-button:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+/* Notification bell */
+.bell-wrap {
+  position: relative;
+}
+
+.bell-button {
+  position: relative;
+}
+
+.bell-icon {
+  display: inline-grid;
+  transform-origin: 50% 12%;
+}
+
+.bell-icon.is-ringing {
+  animation: bell-ring 1.1s ease-in-out;
+}
+
+@keyframes bell-ring {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  15% {
+    transform: rotate(14deg);
+  }
+
+  30% {
+    transform: rotate(-12deg);
+  }
+
+  45% {
+    transform: rotate(9deg);
+  }
+
+  60% {
+    transform: rotate(-6deg);
+  }
+
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0.3);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.bell-badge {
+  position: absolute;
+  top: 2px;
+  right: 1px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--surface);
+
+  color: var(--on-primary);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1;
+  animation: badge-pop 420ms var(--ease-spring);
+}
+
+.bell-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 200;
+
+  width: min(360px, 92vw);
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: 8px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+
+  animation: bell-in 0.28s var(--ease) backwards;
+}
+
+.bell-panel:focus {
+  outline: none;
+}
+
+@keyframes bell-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bell-title {
+  margin: 0;
+  padding: 10px 12px 8px;
+
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bell-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The items settle in one after another */
+.bell-list > li {
+  animation: rise-in 0.4s var(--ease) calc(var(--i, 0) * 50ms + 80ms) backwards;
+}
+
+.bell-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.bell-item:hover,
+.bell-item:focus-visible {
+  background: var(--surface-secondary);
+}
+
+.bell-item.is-unread {
+  background: var(--primary-light);
+}
+
+.bell-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.bell-dot.is-course {
+  background: var(--success);
+}
+
+.bell-dot.is-deadline {
+  background: var(--error);
+}
+
+.bell-item-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bell-item-text strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.bell-item-text span,
+.bell-item-text small {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.bell-empty {
+  margin: 0;
+  padding: 14px 12px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.bell-motivation {
+  margin: 6px 0 0;
+  padding: 12px;
+
+  border-radius: 12px;
+  background: var(--surface-secondary);
+
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.bell-motivation strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+/* Theme switch: a tiny sky. Day = cream-blue sky with sun and clouds; night = indigo sky with moon and stars. */
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tt-track {
+  position: relative;
+  width: 62px;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(60, 40, 20, 0.1);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #d9edff 0%, #ffe8cc 100%);
+  background-clip: padding-box; /* keep the day sky from showing under the border at night */
+  box-shadow: inset 0 1px 3px rgba(60, 40, 20, 0.12);
+  transition:
+    box-shadow var(--dur) ease,
+    border-color var(--dur) ease;
+}
+
+.theme-toggle:hover .tt-track {
+  box-shadow:
+    inset 0 1px 3px rgba(60, 40, 20, 0.12),
+    0 0 0 4px var(--primary-light);
+}
+
+.theme-toggle[aria-checked="true"] .tt-track {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-pill);
+}
+
+/* The night sky fades in over the day sky (gradients cannot animate, so two layers cross-fade) */
+.tt-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #1b2040 0%, #2c2350 100%);
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.theme-toggle[aria-checked="true"] .tt-sky {
+  opacity: 1;
+}
+
+/* Clouds drift away at night */
+.tt-cloud {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  opacity: 0.95;
+  transition:
+    transform 520ms var(--ease),
+    opacity 360ms ease;
+}
+
+.tt-cloud-a {
+  right: 7px;
+  bottom: 6px;
+  width: 17px;
+  height: 7px;
+}
+
+.tt-cloud-a::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.tt-cloud-b {
+  right: 21px;
+  bottom: 11px;
+  width: 11px;
+  height: 5px;
+  opacity: 0.8;
+  animation: tt-drift 6s ease-in-out infinite;
+}
+
+.theme-toggle[aria-checked="true"] .tt-cloud {
+  opacity: 0;
+  transform: translate(14px, 8px);
+}
+
+/* Stars appear at night and twinkle slowly */
+.tt-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.8);
+  transition:
+    opacity 500ms ease 120ms,
+    transform 520ms var(--ease) 120ms;
+}
+
+.theme-toggle[aria-checked="true"] .tt-stars {
+  opacity: 1;
+  transform: none;
+}
+
+.tt-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 5px 1px rgba(255, 255, 255, 0.7);
+  animation: tt-twinkle 3.2s ease-in-out infinite;
+}
+
+.tt-star-a {
+  top: 8px;
+  left: 11px;
+}
+
+.tt-star-b {
+  top: 19px;
+  left: 21px;
+  width: 2px;
+  height: 2px;
+  animation-delay: -1.1s;
+}
+
+.tt-star-c {
+  top: 9px;
+  left: 29px;
+  width: 2px;
+  height: 2px;
+  animation-delay: -2.2s;
+}
+
+/* The knob slides with a gentle spring; the sun turns into the moon as it goes */
+.tt-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  transition:
+    transform 520ms var(--ease-spring),
+    width 160ms ease;
+}
+
+.theme-toggle[aria-checked="true"] .tt-knob {
+  transform: translateX(30px);
+}
+
+/* Pressing squashes the knob a little, like a real switch */
+.theme-toggle:active .tt-knob {
+  width: 31px;
+}
+
+.theme-toggle[aria-checked="true"]:active .tt-knob {
+  transform: translateX(25px);
+}
+
+.tt-sun,
+.tt-moon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition:
+    transform 560ms var(--ease-spring),
+    opacity 320ms ease;
+}
+
+.tt-sun {
+  filter: drop-shadow(0 0 4px rgba(255, 170, 40, 0.7));
+}
+
+.tt-moon {
+  opacity: 0;
+  transform: rotate(-80deg) scale(0.4);
+  filter: drop-shadow(0 0 4px rgba(190, 180, 255, 0.55));
+}
+
+.theme-toggle[aria-checked="true"] .tt-sun {
+  opacity: 0;
+  transform: rotate(80deg) scale(0.4);
+}
+
+.theme-toggle[aria-checked="true"] .tt-moon {
+  opacity: 1;
+  transform: none;
+}
+
+.tt-rays {
+  transform-origin: 12px 12px;
+}
+
+.theme-toggle:hover .tt-rays {
+  animation: tt-spin 9s linear infinite;
+}
+
+@keyframes tt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes tt-twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes tt-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: -2px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-star,
+  .tt-cloud-b,
+  .theme-toggle:hover .tt-rays {
+    animation: none;
+  }
+}
+
+/* Signed-in: avatar and log out */
+.avatar-link {
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: var(--primary-light);
+
+  color: var(--primary-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  transition: border-color 0.2s ease;
+}
+
+.avatar-link:hover,
+.avatar-link.is-active {
+  border-color: var(--primary);
+}
+
+.nav-button {
+  padding: 8px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.nav-button:hover {
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+}
+
+/* Signed-out: log in and register */
+.nav-quiet {
+  padding: 8px 12px;
+  border-radius: 999px;
+
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.nav-quiet:hover {
+  color: var(--text-primary);
+}
+
+.nav-cta {
+  padding: 9px 18px;
+
+  border-radius: 999px;
+  background: var(--primary);
+
+  color: var(--on-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  transition: background-color 0.2s ease;
+}
+
+.nav-cta:hover {
+  background: var(--primary-hover);
+}
+
+.menu-button {
+  display: none;
+}
+
+.mobile-menu {
+  display: none;
+}
+
+/* Page layout: navbar on top, content grows, footer rests at the bottom even on short pages */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  flex: 1 0 auto;
+}
+
+.app-content:focus {
+  outline: none;
+}
+
+/* Skip link: hidden until a keyboard user presses Tab */
+.skip-link {
+  position: absolute;
+  top: -64px;
+  left: 12px;
+  z-index: 300;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
+  font-size: var(--text-md);
+  font-weight: 650;
+  transition: top var(--dur) var(--ease);
+}
+
+.skip-link:focus {
+  top: 12px;
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Footer */
+.site-footer {
+  width: min(1200px, calc(100% - 32px));
+  margin: var(--space-8) auto 0;
+  padding: var(--space-6) 0 var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.footer-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.footer-brand p {
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.footer-links a {
+  padding: 6px 0;
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  transition: color var(--dur-fast) ease;
+}
+
+.footer-links a:hover {
+  color: var(--primary-dark);
+}
+
+.footer-links a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.footer-note {
+  margin: var(--space-5) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+/* Simple message pages: 404 and the "restoring your session" screen */
+.page {
+  width: min(var(--w-narrow), calc(100% - 32px));
+  margin: 0 auto;
+  padding: var(--space-8) 0 var(--space-9);
+}
+
+.page h1 {
+  margin: 0 0 var(--space-3);
+  color: var(--text-primary);
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  letter-spacing: -0.04em;
+}
+
+.page p {
+  margin: 0 0 var(--space-5);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.page a {
+  color: var(--primary-dark);
+  font-weight: 650;
+}
+
+@media (max-width: 1040px) {
+  .navbar {
+    width: min(100% - 24px, 1200px);
+  }
+
+  .nav-links,
+  .avatar-link,
+  .desktop-only {
+    display: none;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+  }
+
+  .menu-button {
+    display: grid;
+  }
+
+  .bell-wrap {
+    position: static;
+  }
+
+  .bell-panel {
+    position: fixed;
+    top: calc(var(--nav-height) + 4px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
+
+  .mobile-menu {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    right: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    padding: 12px;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0 0 16px 16px;
+
+    box-shadow: 0 12px 30px rgba(23, 23, 23, 0.1);
+  }
+
+  .mobile-menu a,
+  .mobile-menu button {
+    padding: 13px 14px;
+
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 550;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobile-menu a:hover,
+  .mobile-menu button:hover {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+}

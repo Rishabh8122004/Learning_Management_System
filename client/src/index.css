@@ -1,0 +1,217 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  /* Light theme: airy warm white, soft text, one calm accent */
+  --page-background: #faf8f5;
+  --surface: #ffffff;
+  --surface-secondary: #f5f2ed;
+
+  --text-primary: #2a2825;
+  --text-secondary: #6a655d;
+
+  --border: #ece7df;
+
+  --primary: #f28c4a;
+  --primary-hover: #e87c38;
+  --primary-dark: #a34812;
+  --primary-light: #fdf0e6;
+  --on-primary: #2a1306;
+  --accent-heading: #d4622a; /* big accent headlines: warm, and 3:1+ even on the glow */
+
+  /* Fills (bars, dots, tints) and the text-safe versions for words on light surfaces */
+  --success: #3a9d6b;
+  --error: #d64f4f;
+  --success-text: #25774c;
+  --error-text: #b83a3a;
+  --success-solid: #25774c;
+  --on-success: #ffffff;
+  --danger-solid: #b83a3a;
+  --on-danger: #ffffff;
+
+  /* Corner radii: one small scale for the whole product */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius: 16px; /* cards */
+  --radius-lg: 22px; /* hero panels */
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(70, 50, 30, 0.04), 0 4px 14px rgba(70, 50, 30, 0.04);
+  --shadow-md: 0 2px 4px rgba(70, 50, 30, 0.04), 0 14px 34px rgba(70, 50, 30, 0.09);
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur: 280ms;
+  --dur-slow: 600ms;
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 72px;
+  --space-9: 96px;
+
+  /* Page widths: narrow (profile, login), content (goals, admin), wide (home, courses, dashboard) */
+  --w-narrow: 720px;
+  --w-content: 960px;
+  --w-wide: 1120px;
+
+  --nav-height: 68px;
+
+  /* Soft light behind every page (see body::before): warm top-left, golden top-right, earth at the bottom */
+  --glow-a: rgba(242, 140, 74, 0.16);
+  --glow-b: rgba(255, 196, 140, 0.26);
+  --glow-c: rgba(206, 180, 140, 0.2);
+
+  /* Goal types: milestones (violet), habits (teal), targets (blue). "ink" is for text, "soft" for tinted backgrounds. */
+  --goal-milestone: #7664bd;
+  --goal-milestone-ink: #5a4a9e;
+  --goal-milestone-soft: #efecf9;
+  --goal-habit: #2a8a82;
+  --goal-habit-ink: #1d6b65;
+  --goal-habit-soft: #e4f3f1;
+  --goal-target: #4a76b8;
+  --goal-target-ink: #3a619f;
+  --goal-target-soft: #e9f0f9;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --page-background: #171615;
+  --surface: #211f1d;
+  --surface-secondary: #292725;
+
+  --text-primary: #f5f2ed;
+  --text-secondary: #aaa39b;
+
+  --border: #393531;
+
+  --primary: #fb923c;
+  --primary-hover: #f97316;
+  --primary-dark: #f97316;
+  --primary-light: #3a2517;
+  --on-primary: #2a1306;
+
+  --error-text: #f08a8a;
+  --success-text: #6fcf9b;
+  --success-solid: #6fcf9b;
+  --on-success: #0e2a1b;
+  --accent-heading: #fb923c;
+  --danger-solid: #f08a8a;
+  --on-danger: #2a0d0d;
+
+  color-scheme: dark;
+
+  /* Evening ember: warm glow, a hint of dusk violet */
+  --glow-a: rgba(251, 146, 60, 0.16);
+  --glow-b: rgba(124, 104, 176, 0.22);
+  --glow-c: rgba(251, 146, 60, 0.1);
+
+  --goal-milestone: #9a8be0;
+  --goal-milestone-ink: #b4a9ec;
+  --goal-milestone-soft: #2a2638;
+  --goal-habit: #4fb5ab;
+  --goal-habit-ink: #78cfc6;
+  --goal-habit-soft: #1b2f2d;
+  --goal-target: #7aa3de;
+  --goal-target-ink: #9bbcec;
+  --goal-target-soft: #1f2b3c;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 14px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 1040px) {
+  :root {
+    --nav-height: 60px;
+  }
+}
+
+/* Theme change: the new theme is revealed as a circle growing from the switch (driven by toggleTheme in App.jsx).
+   The browser's default cross-fade is switched off so only the circle shows. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+::selection {
+  background: var(--primary-light);
+  color: var(--text-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background: var(--page-background);
+  color: var(--text-primary);
+
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* A fixed, motionless layer behind the whole app. Cards stay solid, so text never sits on the glow. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 34rem at -5% -10%, var(--glow-a), transparent 62%),
+    radial-gradient(52rem 32rem at 105% 0%, var(--glow-b), transparent 58%),
+    radial-gradient(70rem 40rem at 50% 118%, var(--glow-c), transparent 62%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

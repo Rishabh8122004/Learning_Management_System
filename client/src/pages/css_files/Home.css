@@ -1,0 +1,541 @@
+.home-page {
+  width: min(var(--w-wide), calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+/* --------------------------------------------------
+   HERO: words on the left, a calm sketch of the idea on the right
+-------------------------------------------------- */
+
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: var(--space-7);
+  align-items: center;
+  padding: 96px 0 104px;
+}
+
+.home-eyebrow {
+  margin: 0 0 18px;
+  color: var(--primary-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.home-hero h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2.8rem, 5.6vw, 4.6rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+/* A soft highlighter swipe draws itself behind the orange phrase (and follows it across wrapped lines) */
+.home-hero h1 span {
+  color: var(--accent-heading);
+  background: linear-gradient(
+      color-mix(in srgb, var(--accent-heading) 12%, transparent),
+      color-mix(in srgb, var(--accent-heading) 12%, transparent)
+    )
+    no-repeat 0 90% / 0% 0.26em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: highlight-swipe 900ms var(--ease) 650ms forwards;
+}
+
+@keyframes highlight-swipe {
+  to {
+    background-size: 100% 0.26em;
+  }
+}
+
+.home-hero-text {
+  max-width: 560px;
+  margin: 28px 0 0;
+  color: var(--text-secondary);
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.home-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.home-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-sources li {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* The sketch: decorative shapes only (a list that fills in, a progress ring, a streak of dots) */
+.hero-sketch {
+  position: relative;
+  width: min(100%, 400px);
+  aspect-ratio: 1 / 1.05;
+  margin-inline: auto;
+  animation: rise-in 0.9s var(--ease) 0.25s backwards;
+}
+
+.sketch-card {
+  position: absolute;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.sketch-main {
+  inset: 6% 8% 12% 0;
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  padding: 26px 24px;
+  animation: sketch-float 7s ease-in-out infinite;
+}
+
+.sketch-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sketch-dot {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.sketch-dot.is-done {
+  border-color: var(--success-solid);
+  background: var(--success-solid);
+}
+
+.sketch-dot.is-done::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 6px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--on-success);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.sketch-dot.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.sketch-line {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+}
+
+.sketch-line.is-active {
+  background: color-mix(in srgb, var(--primary) 45%, var(--border));
+}
+
+.sketch-bar {
+  height: 8px;
+  margin-top: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--surface-secondary);
+}
+
+.sketch-bar-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+  animation: sketch-fill 1800ms var(--ease) 900ms forwards;
+}
+
+.sketch-chip {
+  padding: 14px;
+}
+
+.sketch-ring-card {
+  top: 0;
+  right: 0;
+  display: grid;
+  width: 25%;
+  aspect-ratio: 1;
+  place-items: center;
+  animation: sketch-float 8s ease-in-out -2s infinite;
+}
+
+.sketch-ring {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) 0 72%, var(--border) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent 64%, #000 66%);
+  mask: radial-gradient(farthest-side, transparent 64%, #000 66%);
+}
+
+.sketch-streak {
+  right: 4%;
+  bottom: 0;
+  display: flex;
+  gap: 6px;
+  animation: sketch-float 9s ease-in-out -4s infinite;
+}
+
+.sketch-streak span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.sketch-streak .is-on {
+  background: var(--primary);
+}
+
+@keyframes sketch-fill {
+  to {
+    width: 68%;
+  }
+}
+
+@keyframes sketch-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (max-width: 900px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+    padding: 64px 0 56px;
+  }
+
+  .hero-sketch {
+    width: min(100%, 340px);
+  }
+}
+
+/* --------------------------------------------------
+   LEARNING FLOW
+-------------------------------------------------- */
+
+.home-learning-flow {
+  padding: 80px 0 96px;
+  border-top: 1px solid var(--border);
+}
+
+.flow-intro {
+  max-width: 620px;
+}
+
+.flow-intro h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.hero-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 72px;
+}
+
+/*
+  Each step is centered inside its own grid column.
+
+  With three equal columns:
+    marker 01 center = 1/6 of the path width
+    marker 02 center = 1/2 of the path width
+    marker 03 center = 5/6 of the path width
+
+  The track uses those exact positions, so it remains
+  connected to the markers when the viewport changes.
+*/
+
+.hero-track-line {
+  position: absolute;
+  top: 14px;
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 1px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.hero-track-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24%;
+  height: 100%;
+  background: var(--primary);
+  animation: learning-progress 5s ease-in-out infinite;
+}
+
+.learning-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+.learning-step-marker {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--primary);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary-dark);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.learning-step-content {
+  width: 100%;
+}
+
+.learning-step-content h3 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.learning-step-content p {
+  max-width: 180px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/*
+  The orange segment stays inside the actual track.
+
+  It enters from the beginning of the path, travels through
+  the path, and stops at the end without overshooting it.
+*/
+
+@keyframes learning-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  20% {
+    transform: translateX(0);
+  }
+
+  70% {
+    transform: translateX(315%);
+  }
+
+  100% {
+    transform: translateX(315%);
+  }
+}
+
+/* --------------------------------------------------
+   CLOSING
+-------------------------------------------------- */
+
+.home-closing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  padding: 80px 0 20px;
+  border-top: 1px solid var(--border);
+}
+
+.home-closing h2 {
+  max-width: 520px;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.home-closing-copy {
+  align-self: end;
+  max-width: 520px;
+}
+
+.home-closing-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.home-closing-copy .primary-button {
+  margin-top: 28px;
+}
+
+/* --------------------------------------------------
+   MOBILE
+-------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .home-page {
+    width: min(100% - 24px, 1120px);
+    padding-bottom: 56px;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(2.6rem, 12.5vw, 4rem);
+  }
+
+  .home-hero-text {
+    font-size: 1rem;
+  }
+
+  .home-cta .primary-button,
+  .home-cta .secondary-button,
+  .home-closing-copy .primary-button {
+    flex: 1 1 100%;
+  }
+
+  .home-learning-flow {
+    padding: 64px 0 72px;
+  }
+
+  .hero-track {
+    grid-template-columns: 1fr;
+    gap: 42px;
+    margin-top: 48px;
+  }
+
+  /*
+    On mobile the same track becomes vertical.
+
+    Marker centers are:
+      first marker  -> 15px from top
+      last marker   -> 15px from bottom
+
+    The track therefore connects the marker centers.
+  */
+
+  .hero-track-line {
+    top: 15px;
+    bottom: 15px;
+    left: 14px;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+
+  .hero-track-progress {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 28%;
+    animation: learning-progress-mobile 5s ease-in-out infinite;
+  }
+
+  .learning-step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 18px;
+    text-align: left;
+  }
+
+  .learning-step-content {
+    padding-top: 3px;
+  }
+
+  .learning-step-content p {
+    max-width: none;
+    margin: 0;
+  }
+
+  .home-closing {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 64px 0 20px;
+  }
+}
+
+/* --------------------------------------------------
+   MOBILE PATH ANIMATION
+-------------------------------------------------- */
+
+@keyframes learning-progress-mobile {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  20% {
+    transform: translateY(0);
+  }
+
+  70% {
+    transform: translateY(260%);
+  }
+
+  100% {
+    transform: translateY(260%);
+  }
+}
+
+/* --------------------------------------------------
+   REDUCED MOTION
+-------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-track-progress,
+  .sketch-main,
+  .sketch-chip {
+    animation: none;
+  }
+
+  .sketch-bar-fill {
+    width: 68%;
+    animation: none;
+  }
+
+  .home-hero h1 span {
+    background-size: 100% 0.26em;
+    animation: none;
+  }
+
+  .primary-button {
+    transition: none;
+  }
+}
