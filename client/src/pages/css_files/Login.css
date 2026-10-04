@@ -257,3 +257,9 @@
     padding: 28px 22px;
   }
 }
+
+.auth-forgot {
+  margin: calc(var(--space-2) * -1) 0 0;
+  text-align: right;
+  font-size: var(--text-sm);
+}
