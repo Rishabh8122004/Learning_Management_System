@@ -41,6 +41,13 @@ const pickAllowed = (body) => {
   return data;
 };
 
+// The lists must really be lists. (A null "modules" used to be saved and then crashed the progress update.)
+const shapeProblem = (data) => {
+  if (data.modules !== undefined && !Array.isArray(data.modules)) return 'modules must be a list';
+  if (data.tags !== undefined && !Array.isArray(data.tags)) return 'tags must be a list';
+  return null;
+};
+
 const adminView = (course) => {
   const obj = course.toObject();
   delete obj.__v;
@@ -51,6 +58,9 @@ const adminView = (course) => {
 const createCourse = async (req, res) => {
   try {
     const data = pickAllowed(req.body);
+
+    const problem = shapeProblem(data);
+    if (problem) return fail(res, 400, problem);
 
     // Legacy field: always the creating admin, never taken from the request.
     data.instructor = req.user.id;
@@ -74,6 +84,9 @@ const updateCourse = async (req, res) => {
 
     const data = pickAllowed(req.body);
     if (Object.keys(data).length === 0) return fail(res, 400, 'No valid fields to update');
+
+    const problem = shapeProblem(data);
+    if (problem) return fail(res, 400, problem);
 
     const course = await Course.findById(id);
     if (!course || course.deletedAt) return fail(res, 404, 'Course not found');
